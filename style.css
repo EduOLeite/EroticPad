@@ -55,15 +55,18 @@ body {
     padding: 1.5rem;
 }
 
-/* Barra de Categorias */
 .categories-bar {
     display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Faz os botões irem pra linha de baixo se não couberem */
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 2rem;
 }
 
+/* Evita que os botões espremam o texto */
+.categories-bar .chip {
+    flex-shrink: 0;
+}
 .categories-bar::-webkit-scrollbar { display: none; }
 
 .chip {

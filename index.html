@@ -102,8 +102,10 @@
             <button class="chip active" onclick="filtrarCategoria('Todos')">Todos</button>
             <button class="chip" onclick="filtrarCategoria('Dark Romance')">Dark Romance</button>
             <button class="chip" onclick="filtrarCategoria('Fantasia')">Fantasia</button>
-            <button class="chip" onclick="filtrarCategoria('Máfia & Poder')">Máfia & Poder</button>
-            <button class="chip" onclick="filtrarCategoria('Universitário')">Universitário</button>
+            <button class="chip" onclick="filtrarCategoria('Suspense & Mistério')">Suspense & Mistério</button>
+            <button class="chip" onclick="filtrarCategoria('Romance Futurista')">Romance Futurista</button>
+            <button class="chip" onclick="filtrarCategoria('Terror & Sobrenatural')">Terror & Sobrenatural</button>
+            <button class="chip" onclick="filtrarCategoria('Amores Proibidos')">Amores Proibidos</button>
             <button class="chip" onclick="filtrarCategoria('CEO & Submissão')">CEO & Submissão</button>
         </div>
 
@@ -127,39 +129,42 @@
                 <h1 id="detail-title">Título da História</h1>
                 <p id="detail-author" class="author-text">Por Autor</p>
 
-               <!-- Grupo de Ações do Livro (Começar a ler + Biblioteca) -->
-<div class="main-actions-group" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; margin-bottom: 25px;">
-    
-    <!-- Botão Principal -->
-    <button id="btn-start-read" class="btn-vip" style="max-width: 220px; margin: 0;" onclick="iniciarLeituraPrimeiroCap()">
-        📖 Começar a Ler
-    </button>
+                <!-- Grupo de Ações do Livro (Começar a ler + Biblioteca) -->
+                <div class="main-actions-group" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; margin-bottom: 25px;">
+                    
+                    <!-- Botão Principal -->
+                    <button id="btn-start-read" class="btn-vip" style="max-width: 220px; margin: 0;" onclick="iniciarLeituraPrimeiroCap()">
+                        📖 Começar a Ler
+                    </button>
 
-    <!-- Botões de Status (Alinhados na mesma linha/bloco) -->
-    <div class="actions-bar" style="display: flex; gap: 8px; align-items: center;">
-        <button id="btn-status-favorito" class="btn-action-status" onclick="alterarStatusBiblioteca('favorito')">
-            ❤️ Favorito
-        </button>
-        <button id="btn-status-para_ler" class="btn-action-status" onclick="alterarStatusBiblioteca('para_ler')">
-            🔖 Para Ler
-        </button>
-        <button id="btn-status-concluido" class="btn-action-status" onclick="alterarStatusBiblioteca('concluido')">
-            ✅ Concluído
-        </button>
-    </div>
+                    <!-- Botões de Status (Alinhados na mesma linha/bloco) -->
+                    <div class="actions-bar" style="display: flex; gap: 8px; align-items: center;">
+                        <button id="btn-status-favorito" class="btn-action-status" onclick="alterarStatusBiblioteca('favorito')">
+                            ❤️ Favorito
+                        </button>
+                        <button id="btn-status-para_ler" class="btn-action-status" onclick="alterarStatusBiblioteca('para_ler')">
+                            🔖 Para Ler
+                        </button>
+                        <button id="btn-status-concluido" class="btn-action-status" onclick="alterarStatusBiblioteca('concluido')">
+                            ✅ Concluído
+                        </button>
+                    </div>
 
-</div>
-        <div class="tabs-nav">
-            <button id="tab-btn-synopsis" class="tab-btn active" onclick="alternarAbaDetalhes('synopsis')">Resumo</button>
-            <button id="tab-btn-chapters" class="tab-btn" onclick="alternarAbaDetalhes('chapters')">Capítulos</button>
-        </div>
+                </div>
 
-        <div id="tab-content-synopsis" class="tab-content">
-            <p id="detail-synopsis" class="synopsis-text"></p>
-        </div>
+                <div class="tabs-nav">
+                    <button id="tab-btn-synopsis" class="tab-btn active" onclick="alternarAbaDetalhes('synopsis')">Resumo</button>
+                    <button id="tab-btn-chapters" class="tab-btn" onclick="alternarAbaDetalhes('chapters')">Capítulos</button>
+                </div>
 
-        <div id="tab-content-chapters" class="tab-content hidden">
-            <div class="chapters-list"></div>
+                <div id="tab-content-synopsis" class="tab-content">
+                    <p id="detail-synopsis" class="synopsis-text"></p>
+                </div>
+
+                <div id="tab-content-chapters" class="tab-content hidden">
+                    <div class="chapters-list"></div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -200,27 +205,28 @@
             </div>
         </div>
     </section>
+
     <!-- VISÃO: MINHA BIBLIOTECA -->
-<section id="view-library" class="view hidden">
-    <div class="container-biblioteca" style="padding: 20px;">
-        <button class="btn-back" onclick="mostrarHome()">← Voltar ao Catálogo</button>
-        <h2 style="margin-top: 15px;">📚 Minha Biblioteca</h2>
+    <section id="view-library" class="view hidden">
+        <div class="container-biblioteca" style="padding: 20px;">
+            <button class="btn-back" onclick="mostrarHome()">← Voltar ao Catálogo</button>
+            <h2 style="margin-top: 15px;">📚 Minha Biblioteca</h2>
 
-        <!-- Abas de Navegação -->
-        <div class="tabs-biblioteca" style="display: flex; gap: 10px; margin: 20px 0;">
-            <button class="tab-btn active" id="tab-bib-lendo" onclick="filtrarBiblioteca('lendo')">📖 Lendo</button>
-            <button class="tab-btn" id="tab-bib-favorito" onclick="filtrarBiblioteca('favorito')">❤️ Favoritos</button>
-            <button class="tab-btn" id="tab-bib-para_ler" onclick="filtrarBiblioteca('para_ler')">🔖 Para Ler</button>
-            <button class="tab-btn" id="tab-bib-concluido" onclick="filtrarBiblioteca('concluido')">✅ Concluídos</button>
-        </div>
+            <!-- Abas de Navegação -->
+            <div class="tabs-biblioteca" style="display: flex; gap: 10px; margin: 20px 0;">
+                <button class="tab-btn active" id="tab-bib-lendo" onclick="filtrarBiblioteca('lendo')">📖 Lendo</button>
+                <button class="tab-btn" id="tab-bib-favorito" onclick="filtrarBiblioteca('favorito')">❤️ Favoritos</button>
+                <button class="tab-btn" id="tab-bib-para_ler" onclick="filtrarBiblioteca('para_ler')">🔖 Para Ler</button>
+                <button class="tab-btn" id="tab-bib-concluido" onclick="filtrarBiblioteca('concluido')">✅ Concluídos</button>
+            </div>
 
-        <!-- Container dos Cards -->
-        <div id="grid-livros" class="grid-livros">
-            <p style="color: var(--text-secondary);">Carregando sua biblioteca...</p>
+            <!-- Container dos Cards -->
+            <div id="grid-livros" class="grid-livros">
+                <p style="color: var(--text-secondary);">Carregando sua biblioteca...</p>
+            </div>
         </div>
-    </div>
-    
-</section>
+    </section>
+
     <!-- MODAL DE LOGIN, CADASTRO E RECUPERAÇÃO -->
     <div id="modal-auth" class="modal-overlay hidden">
         <div class="auth-card">
@@ -313,27 +319,27 @@
     </div>
 
     <!-- VISÃO: LEITOR DE CAPÍTULOS -->
-<section id="view-reader" class="view hidden">
-    <div class="reader-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
-        <!-- Botão de Voltar -->
-        <button class="btn-back" onclick="voltarParaDetalhes()" style="margin-bottom: 20px;">← Voltar para o Livro</button>
-        
-        <!-- Título do Capítulo -->
-        <h2 id="reader-chapter-title" style="margin-bottom: 25px; color: #fff;"></h2>
+    <section id="view-reader" class="view hidden">
+        <div class="reader-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+            <!-- Botão de Voltar -->
+            <button class="btn-back" onclick="voltarParaDetalhes()" style="margin-bottom: 20px;">← Voltar para o Livro</button>
+            
+            <!-- Título do Capítulo -->
+            <h2 id="reader-chapter-title" style="margin-bottom: 25px; color: #fff;"></h2>
 
-        <!-- Texto do Capítulo -->
-        <div id="reader-text" class="reader-content" style="line-height: 1.8; font-size: 1.1rem; color: #ddd;">
-            <!-- O texto do capítulo entra aqui via JS -->
-        </div>
+            <!-- Texto do Capítulo -->
+            <div id="reader-text" class="reader-content" style="line-height: 1.8; font-size: 1.1rem; color: #ddd;">
+                <!-- O texto do capítulo entra aqui via JS -->
+            </div>
 
-        <!-- Paywall / Aviso VIP para capítulos travados -->
-        <div id="paywall" class="paywall-box hidden" style="margin-top: 30px; padding: 30px; background: rgba(255,59,105,0.1); border: 1px solid #ff3b69; border-radius: 12px; text-align: center;">
-            <h3 style="color: #ff3b69; margin-bottom: 10px;">🔒 Conteúdo Exclusivo VIP</h3>
-            <p style="margin-bottom: 20px; color: #ccc;">Assine o VIP para continuar lendo este e todos os outros capítulos do catálogo!</p>
-            <button class="btn-vip" onclick="abrirModalVIP()" style="padding: 12px 24px; font-size: 1rem;">Seja VIP Agora 🔥</button>
+            <!-- Paywall / Aviso VIP para capítulos travados -->
+            <div id="paywall" class="paywall-box hidden" style="margin-top: 30px; padding: 30px; background: rgba(255,59,105,0.1); border: 1px solid #ff3b69; border-radius: 12px; text-align: center;">
+                <h3 style="color: #ff3b69; margin-bottom: 10px;">🔒 Conteúdo Exclusivo VIP</h3>
+                <p style="margin-bottom: 20px; color: #ccc;">Assine o VIP para continuar lendo este e todos os outros capítulos do catálogo!</p>
+                <button class="btn-vip" onclick="abrirModalVIP()" style="padding: 12px 24px; font-size: 1rem;">Seja VIP Agora 🔥</button>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>

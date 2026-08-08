@@ -464,12 +464,8 @@ function mostrarHome() {
 function abrirHistoria(historia) {
     historiaAtual = historia.titulo;
     
-    // ... (o código que já estava aí preenchendo a capa, título, sinopse, etc) ...
-
-    // Coloque ela aqui no final:
     verificarStatusAtualBiblioteca(historia.titulo);
 
-    
     const capaImg = historia.capa_url || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80';
     document.getElementById('detail-cover').src = capaImg;
     document.getElementById('detail-title').innerText = historia.titulo;
@@ -559,7 +555,7 @@ function renderizarCardsHistorias(lista) {
 
 function filtrarCategoria(categoria) {
     document.querySelectorAll('.categories-bar .chip').forEach(btn => {
-        if (btn.innerText === categoria) {
+        if (btn.innerText.trim() === categoria) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
@@ -585,7 +581,7 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
         .eq('historia_titulo', tituloHistoria);
 
     if (error || !capitulos || capitulos.length === 0) {
-        listaContainer.innerHTML = "<p style='color: var(--text-secondary);'>Nenum capítulo publicado ainda para esta história.</p>";
+        listaContainer.innerHTML = "<p style='color: var(--text-secondary);'>Nenhum capítulo publicado ainda para esta história.</p>";
         primeiroCapituloCarregado = null;
         return;
     }
