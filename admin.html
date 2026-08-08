@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EroticPad - Painel Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        .admin-login-box {
+            max-width: 400px;
+            margin: 5rem auto;
+            background: var(--bg-card, #1e1e24);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        .admin-login-box h2 {
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="navbar">
+        <div class="logo">Erotic<span>Pad</span> <small style="font-size: 0.8rem; color: #888;">| Área do Autor</small></div>
+        <button id="btn-logout" class="btn-back hidden" onclick="fazerLogout()">Sair 🚪</button>
+    </header>
+
+    <!-- TELA 1: LOGIN DE AUTENTICAÇÃO -->
+    <section id="sec-login" class="view">
+        <div class="admin-login-box">
+            <h2>🔐 Login do Autor</h2>
+            <div class="form-group" style="text-align: left;">
+                <label>E-mail:</label>
+                <input type="email" id="login-email" placeholder="seu-email@exemplo.com">
+            </div>
+            <div class="form-group" style="text-align: left; margin-top: 1rem;">
+                <label>Senha:</label>
+                <input type="password" id="login-password" placeholder="Sua senha secreta">
+            </div>
+            <button class="btn-vip" style="width: 100%; border-radius: 8px; margin-top: 1.5rem;" onclick="fazerLogin()">Entrar no Painel</button>
+            <p id="login-error" style="color: #ff3b69; margin-top: 1rem; font-size: 0.9rem; display: none;"></p>
+        </div>
+    </section>
+
+    <!-- TELA 2: PAINEL ADMINISTRATIVO -->
+    <section id="sec-dashboard" class="view hidden" style="padding: 2rem 1rem; max-width: 900px; margin: 0 auto;">
+        
+        <!-- Formulário 1: Criar/Editar História -->
+        <div class="admin-card">
+            <h2 id="story-form-title">📚 1. Cadastrar / Editar História</h2>
+            
+            <div class="form-group">
+                <label>Selecione para Editar (ou deixe em "Nova História"):</label>
+                <select id="admin-story-edit-select" onchange="carregarHistoriaParaEdicao()">
+                    <option value="">-- Nova História --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Título do Livro:</label>
+                <input type="text" id="new-story-title" placeholder="Ex: Amor Obsessivo">
+            </div>
+
+            <div class="form-group">
+                <label>Autor(a):</label>
+                <input type="text" id="new-story-author" placeholder="Ex: Helena Vance">
+            </div>
+
+            <div class="form-group">
+                <label>Categoria:</label>
+                <select id="new-story-category">
+                    <option value="Dark Romance">Dark Romance</option>
+                    <option value="Fantasia">Fantasia</option>
+                    <option value="Máfia & Poder">Máfia & Poder</option>
+                    <option value="Universitário">Universitário</option>
+                    <option value="CEO & Submissão">CEO & Submissão</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Sinopse:</label>
+                <textarea id="new-story-synopsis" rows="3" placeholder="Resumo empolgante do livro..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Imagem da Capa (JPG/PNG):</label>
+                <input type="file" id="new-story-cover" accept="image/*">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-save-story" class="btn-vip" style="width: 100%; border-radius: 8px;" onclick="cadastrarOuAtualizarHistoriaBD()">✨ Criar História</button>
+                <button id="btn-cancel-story-edit" class="btn-back hidden" style="background:#555; color:#fff; padding: 0.8rem 1rem; border-radius: 8px; margin:0;" onclick="resetarFormHistoria()">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Formulário 2: Publicar / Editar Capítulo -->
+        <div class="admin-card" style="margin-top: 2rem;">
+            <h2 id="chapter-form-title">✍️ 2. Publicar Capítulo</h2>
+            
+            <div class="form-group">
+                <label>Selecione a História:</label>
+                <select id="admin-story-select">
+                    <!-- Preenchido via JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Número do Capítulo:</label>
+                <input type="number" id="admin-chapter-num" placeholder="Ex: 1" value="1">
+            </div>
+
+            <div class="form-group">
+                <label>Título do Capítulo:</label>
+                <input type="text" id="admin-chapter-title" placeholder="Ex: O Primeiro Encontro">
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Acesso:</label>
+                <select id="admin-chapter-type">
+                    <option value="free">Gratuito (Capítulos 1 e 2)</option>
+                    <option value="vip">Exclusivo VIP 🔒 (A partir do Cap 3)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Subir arquivo de texto (.txt):</label>
+                <input type="file" id="admin-file-input" accept=".txt" onchange="carregarArquivoTexto(event)">
+            </div>
+
+            <div class="form-group">
+                <label>Ou escreva/cole o texto aqui:</label>
+                <textarea id="admin-chapter-content" rows="8" placeholder="Digite ou cole a história aqui..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-save-chapter" class="btn-vip" style="width: 100%; border-radius: 8px;" onclick="publicarCapituloBD()">🚀 Publicar Capítulo</button>
+                <button id="btn-cancel-chapter-edit" class="btn-back hidden" style="background:#555; color:#fff; padding: 0.8rem 1rem; border-radius: 8px; margin:0;" onclick="resetarFormCapitulo()">Cancelar Edição</button>
+            </div>
+        </div>
+
+        <!-- Formulário 3: Gerenciar Capítulos Existentes -->
+        <div class="admin-card" style="margin-top: 2rem;">
+            <h2>🗑️ 3. Gerenciar Capítulos Existentes</h2>
+            
+            <div class="form-group">
+                <label>Selecione a História para carregar os capítulos:</label>
+                <select id="admin-manage-story-select" onchange="carregarCapitulosParaGerenciar()">
+                    <!-- Preenchido via JS -->
+                </select>
+            </div>
+
+            <div id="admin-chapters-list" class="chapters-list" style="margin-top: 1rem;">
+                <!-- Lista de capítulos -->
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://xkggqzzzuvrcpwtrbatm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_TtSVvv-5iVjARmijuAdhzg_8SYxuDnT";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let idCapituloEmEdicao = null;
+    let historiaEmEdicao = null;
+    let historiasListaCache = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Escuta em tempo real mudanças de autenticação
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                mostrarDashboard();
+            } else {
+                mostrarLogin();
+            }
+        });
+
+        // Verificação inicial
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            mostrarDashboard();
+        } else {
+            mostrarLogin();
+        }
+    });
+
+    async function fazerLogin() {
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errElem = document.getElementById('login-error');
+
+        errElem.style.display = 'none';
+
+        if (!email || !password) {
+            errElem.innerText = "Preencha o e-mail e a senha!";
+            errElem.style.display = 'block';
+            return;
+        }
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            errElem.innerText = "❌ E-mail ou senha inválidos!";
+            errElem.style.display = 'block';
+        } else {
+            mostrarDashboard();
+        }
+    }
+
+    async function fazerLogout() {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            alert("Erro ao sair: " + error.message);
+        } else {
+            mostrarLogin();
+        }
+    }
+
+    function mostrarDashboard() {
+        document.getElementById('sec-login').classList.add('hidden');
+        document.getElementById('sec-dashboard').classList.remove('hidden');
+        document.getElementById('btn-logout').classList.remove('hidden');
+        atualizarSelectHistoriasAdmin();
+    }
+
+    function mostrarLogin() {
+        document.getElementById('sec-login').classList.remove('hidden');
+        document.getElementById('sec-dashboard').classList.add('hidden');
+        document.getElementById('btn-logout').classList.add('hidden');
+    }
+
+    async function atualizarSelectHistoriasAdmin() {
+        const selectPublish = document.getElementById('admin-story-select');
+        const selectManage = document.getElementById('admin-manage-story-select');
+        const selectEdit = document.getElementById('admin-story-edit-select');
+
+        const { data } = await supabaseClient.from('historias').select('*');
+        historiasListaCache = data || [];
+
+        if (historiasListaCache.length > 0) {
+            let optionsHtml = "";
+            historiasListaCache.forEach(h => {
+                optionsHtml += `<option value="${h.titulo}">${h.titulo}</option>`;
+            });
+
+            let editOptionsHtml = '<option value="">-- Nova História --</option>' + optionsHtml;
+
+            if (selectPublish) selectPublish.innerHTML = optionsHtml;
+            if (selectManage) {
+                selectManage.innerHTML = optionsHtml;
+                carregarCapitulosParaGerenciar();
+            }
+            if (selectEdit) selectEdit.innerHTML = editOptionsHtml;
+        } else {
+            if (selectPublish) selectPublish.innerHTML = "<option value=''>Nenhuma história criada</option>";
+            if (selectManage) selectManage.innerHTML = "<option value=''>Nenhuma história criada</option>";
+            if (selectEdit) selectEdit.innerHTML = "<option value=''>Nenhuma história criada</option>";
+        }
+    }
+
+    function carregarHistoriaParaEdicao() {
+        const selectEdit = document.getElementById('admin-story-edit-select');
+        const tituloSel = selectEdit.value;
+
+        if (!tituloSel) {
+            resetarFormHistoria();
+            return;
+        }
+
+        const h = historiasListaCache.find(item => item.titulo === tituloSel);
+        if (!h) return;
+
+        historiaEmEdicao = h;
+        document.getElementById('new-story-title').value = h.titulo;
+        document.getElementById('new-story-author').value = h.autor;
+        document.getElementById('new-story-category').value = h.categoria;
+        document.getElementById('new-story-synopsis').value = h.sinopse;
+
+        document.getElementById('story-form-title').innerText = "📝 Editar História";
+        document.getElementById('btn-save-story').innerText = "💾 Salvar Alterações da História";
+        document.getElementById('btn-cancel-story-edit').classList.remove('hidden');
+    }
+
+    function resetarFormHistoria() {
+        historiaEmEdicao = null;
+        document.getElementById('admin-story-edit-select').value = "";
+        document.getElementById('new-story-title').value = "";
+        document.getElementById('new-story-author').value = "";
+        document.getElementById('new-story-synopsis').value = "";
+        document.getElementById('new-story-cover').value = "";
+
+        document.getElementById('story-form-title').innerText = "📚 1. Cadastrar / Editar História";
+        document.getElementById('btn-save-story').innerText = "✨ Criar História";
+        document.getElementById('btn-cancel-story-edit').classList.add('hidden');
+    }
+
+    async function cadastrarOuAtualizarHistoriaBD() {
+        const titulo = document.getElementById('new-story-title').value.trim();
+        const autor = document.getElementById('new-story-author').value.trim();
+        const categoria = document.getElementById('new-story-category').value;
+        const sinopse = document.getElementById('new-story-synopsis').value.trim();
+        const coverFile = document.getElementById('new-story-cover').files[0];
+
+        if (!titulo || !autor || !sinopse) {
+            alert("Preencha o título, autor e sinopse!");
+            return;
+        }
+
+        let capaUrl = historiaEmEdicao ? historiaEmEdicao.capa_url : "";
+
+        if (coverFile) {
+            const fileExt = coverFile.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+            const { data: uploadData, error: uploadError } = await supabaseClient
+                .storage
+                .from('capas')
+                .upload(fileName, coverFile);
+
+            if (uploadError) {
+                alert("Erro ao enviar a imagem da capa: " + uploadError.message);
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient
+                .storage
+                .from('capas')
+                .getPublicUrl(fileName);
+
+            capaUrl = publicUrlData.publicUrl;
+        }
+
+        const payload = { titulo, autor, categoria, sinopse, capa_url: capaUrl };
+
+        let error;
+        if (historiaEmEdicao) {
+            const res = await supabaseClient
+                .from('historias')
+                .update(payload)
+                .eq('id', historiaEmEdicao.id);
+            error = res.error;
+        } else {
+            const res = await supabaseClient
+                .from('historias')
+                .insert([payload]);
+            error = res.error;
+        }
+
+        if (error) {
+            alert("Erro ao salvar história no banco: " + error.message);
+        } else {
+            alert(historiaEmEdicao ? `✨ História "${titulo}" atualizada!` : `✨ História "${titulo}" criada!`);
+            resetarFormHistoria();
+            atualizarSelectHistoriasAdmin();
+        }
+    }
+
+    function carregarArquivoTexto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('admin-chapter-content').value = e.target.result;
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    async function publicarCapituloBD() {
+        const historia = document.getElementById('admin-story-select').value;
+        const numCapitulo = parseInt(document.getElementById('admin-chapter-num').value) || 1;
+        const tituloCap = document.getElementById('admin-chapter-title').value.trim();
+        const tipoAcesso = document.getElementById('admin-chapter-type').value;
+        const textoConteudo = document.getElementById('admin-chapter-content').value.trim();
+
+        if (!historia) {
+            alert("Cadastre uma história primeiro!");
+            return;
+        }
+
+        if (!tituloCap || !textoConteudo) {
+            alert("Preencha o título e o conteúdo do capítulo!");
+            return;
+        }
+
+        const isVip = numCapitulo > 2 ? (tipoAcesso === 'vip') : false;
+
+        const payload = { 
+            historia_titulo: historia, 
+            capitulo_numero: numCapitulo,
+            capitulo_titulo: tituloCap, 
+            conteudo: textoConteudo,
+            eh_vip: isVip
+        };
+
+        let error;
+        if (idCapituloEmEdicao) {
+            const res = await supabaseClient
+                .from('capitulos')
+                .update(payload)
+                .eq('id', idCapituloEmEdicao);
+            error = res.error;
+        } else {
+            const res = await supabaseClient
+                .from('capitulos')
+                .insert([payload]);
+            error = res.error;
+        }
+
+        if (error) {
+            alert("Erro ao salvar o capítulo: " + error.message);
+        } else {
+            alert(idCapituloEmEdicao ? `✏️ Capítulo "${tituloCap}" atualizado!` : `🔥 Capítulo "${tituloCap}" publicado!`);
+            resetarFormCapitulo();
+            carregarCapitulosParaGerenciar();
+        }
+    }
+
+    function resetarFormCapitulo() {
+        idCapituloEmEdicao = null;
+        document.getElementById('admin-chapter-num').value = "1";
+        document.getElementById('admin-chapter-title').value = "";
+        document.getElementById('admin-chapter-content').value = "";
+        if (document.getElementById('admin-file-input')) {
+            document.getElementById('admin-file-input').value = "";
+        }
+        document.getElementById('chapter-form-title').innerText = "✍️ 2. Publicar Capítulo";
+        document.getElementById('btn-save-chapter').innerText = "🚀 Publicar Capítulo";
+        document.getElementById('btn-cancel-chapter-edit').classList.add('hidden');
+    }
+
+    async function carregarCapitulosParaGerenciar() {
+        const selectManage = document.getElementById('admin-manage-story-select');
+        const listContainer = document.getElementById('admin-chapters-list');
+        
+        if (!selectManage || !selectManage.value) return;
+
+        listContainer.innerHTML = "<p style='color: var(--text-secondary);'>Buscando capítulos...</p>";
+
+        const { data: capitulos, error } = await supabaseClient
+            .from('capitulos')
+            .select('*')
+            .eq('historia_titulo', selectManage.value)
+            .order('capitulo_numero', { ascending: true });
+
+        if (error || !capitulos || capitulos.length === 0) {
+            listContainer.innerHTML = "<p style='color: var(--text-secondary);'>Nenhum capítulo encontrado para esta história.</p>";
+            return;
+        }
+
+        listContainer.innerHTML = "";
+
+        capitulos.forEach(cap => {
+            const item = document.createElement('div');
+            item.className = 'chapter-item';
+            item.style.cursor = 'default';
+
+            const ehVipEfetivo = (cap.capitulo_numero > 2) && cap.eh_vip;
+
+            item.innerHTML = `
+                <div>
+                    <strong>Cap. ${cap.capitulo_numero}: ${cap.capitulo_titulo}</strong>
+                    <p style="font-size:0.8rem; color:#aaa;">${ehVipEfetivo ? '🔒 VIP' : '📖 Grátis'}</p>
+                </div>
+                <div style="display:flex; gap: 8px;">
+                    <button onclick="carregarParaEdicao(${cap.id}, ${cap.capitulo_numero}, '${cap.capitulo_titulo.replace(/'/g, "\\'")}', '${ehVipEfetivo ? 'vip' : 'free'}', \`${escapeQuotes(cap.conteudo)}\`)" style="background:#2196F3; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">✏️ Editar</button>
+                    <button onclick="excluirCapituloBD(${cap.id}, '${cap.capitulo_titulo.replace(/'/g, "\\'")}')" style="background:#ff3b69; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">🗑️ Excluir</button>
+                </div>
+            `;
+            listContainer.appendChild(item);
+        });
+    }
+
+    function escapeQuotes(str) {
+        return str.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    }
+
+    function carregarParaEdicao(id, numero, titulo, tipo, conteudo) {
+        idCapituloEmEdicao = id;
+        document.getElementById('admin-chapter-num').value = numero;
+        document.getElementById('admin-chapter-title').value = titulo;
+        document.getElementById('admin-chapter-type').value = tipo;
+        document.getElementById('admin-chapter-content').value = conteudo;
+
+        document.getElementById('chapter-form-title').innerText = "✏️ Editar Capítulo";
+        document.getElementById('btn-save-chapter').innerText = "💾 Salvar Alterações do Capítulo";
+        document.getElementById('btn-cancel-chapter-edit').classList.remove('hidden');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function excluirCapituloBD(id, titulo) {
+        if (confirm(`Tem certeza que deseja apagar o capítulo "${titulo}"?`)) {
+            const { error } = await supabaseClient
+                .from('capitulos')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert("Erro ao excluir o capítulo: " + error.message);
+            } else {
+                alert("🗑️ Capítulo excluído com sucesso!");
+                carregarCapitulosParaGerenciar();
+            }
+        }
+    }
+</script>
+</body>
+</html>

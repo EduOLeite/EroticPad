@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EroticPad - Histórias & Webnovels</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* Modais */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88); display: flex; align-items: center; justify-content: center;
+            z-index: 1000; backdrop-filter: blur(4px);
+        }
+        .auth-card {
+            background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative;
+        }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; border-bottom: 1px solid #333; }
+        .auth-tab { flex: 1; padding: 10px; text-align: center; background: none; border: none; color: #888; cursor: pointer; font-weight: 600; }
+        .auth-tab.active { color: #ff3b69; border-bottom: 2px solid #ff3b69; }
+
+        /* Links adicionais no Auth */
+        .auth-links { display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 1rem; }
+        .auth-links a { color: #ff3b69; text-decoration: none; cursor: pointer; }
+        .auth-links a:hover { text-decoration: underline; }
+
+        /* Menu Dropdown do Usuário */
+        .user-dropdown-container { position: relative; display: inline-block; }
+        .user-profile-btn {
+            display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05);
+            padding: 6px 12px; border-radius: 20px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.2s;
+        }
+        .user-profile-btn:hover { background: rgba(255,255,255,0.1); }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #ff3b69; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .user-name { font-size: 0.9rem; color: #fff; font-weight: 500; }
+        
+        .dropdown-menu {
+            position: absolute; right: 0; top: 48px; background: #1a1a1e; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; padding: 8px 0; z-index: 999;
+        }
+        .dropdown-item {
+            padding: 10px 16px; color: #ccc; text-decoration: none; font-size: 0.88rem;
+            display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; background: none; border: none; width: 100%; text-align: left;
+        }
+        .dropdown-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .dropdown-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
+        
+        .user-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; margin-left: auto; }
+        .badge-free { background: #333; color: #aaa; }
+        .badge-vip { background: #ff3b69; color: #fff; }
+
+        /* Estilos da Modal VIP */
+        .vip-card-modal {
+            background: #18181c; border: 1px solid rgba(255, 59, 105, 0.3);
+            padding: 2rem; border-radius: 16px; width: 92%; max-width: 650px;
+            box-shadow: 0 15px 35px rgba(255, 59, 105, 0.15); position: relative; text-align: center;
+        }
+        .vip-header-title { font-family: 'Cinzel', serif; font-size: 1.8rem; color: #fff; margin-bottom: 0.5rem; }
+        .vip-subtitle { color: #aaa; font-size: 0.95rem; margin-bottom: 2rem; }
+        
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; margin-bottom: 1.5rem; }
+        .plan-card {
+            background: #222228; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+            padding: 1.2rem; cursor: pointer; transition: all 0.25s ease; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .plan-card:hover, .plan-card.selected {
+            border-color: #ff3b69; background: #2a1f26; transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 59, 105, 0.2);
+        }
+        .plan-card.featured { border-color: #ff3b69; }
+        .plan-badge {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: #ff3b69; color: white; font-size: 0.65rem; font-weight: bold;
+            padding: 2px 8px; border-radius: 10px; text-transform: uppercase;
+        }
+        .plan-days { font-size: 1.1rem; font-weight: bold; color: #fff; margin-top: 5px; }
+        .plan-price { font-size: 1.5rem; font-weight: bold; color: #ff3b69; margin: 10px 0 5px 0; }
+        .plan-price span { font-size: 0.75rem; color: #888; font-weight: normal; }
+        .plan-desc { font-size: 0.75rem; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="logo" onclick="mostrarHome()" style="cursor: pointer;">Erotic<span>Pad</span></div>
+        
+        <div id="nav-user-area" style="display: flex; align-items: center; gap: 12px;">
+            <!-- Renderizado dinamicamente via JS -->
+        </div>
+    </header>
+
+    <!-- Visão 1: Catálogo (Home) -->
+    <section id="view-home" class="view">
+        <div class="categories-bar">
+            <button class="chip active" onclick="filtrarCategoria('Todos')">Todos</button>
+            <button class="chip" onclick="filtrarCategoria('Dark Romance')">Dark Romance</button>
+            <button class="chip" onclick="filtrarCategoria('Fantasia')">Fantasia</button>
+            <button class="chip" onclick="filtrarCategoria('Máfia & Poder')">Máfia & Poder</button>
+            <button class="chip" onclick="filtrarCategoria('Universitário')">Universitário</button>
+            <button class="chip" onclick="filtrarCategoria('CEO & Submissão')">CEO & Submissão</button>
+        </div>
+
+        <h2 class="section-title">Em Destaque</h2>
+        <div class="stories-grid" id="stories-container">
+            <p style="color: var(--text-secondary);">Carregando catálogo...</p>
+        </div>
+    </section>
+
+    <!-- Visão 2: Detalhes do Livro -->
+    <section id="view-details" class="view hidden">
+        <button class="btn-back" onclick="mostrarHome()">← Voltar ao Catálogo</button>
+        
+        <div class="story-detail-container">
+            <div class="story-cover-box">
+                <img id="detail-cover" src="" alt="Capa do Livro">
+            </div>
+
+            <div class="story-meta-box">
+                <span id="detail-category" class="tag" style="align-self: flex-start;">Categoria</span>
+                <h1 id="detail-title">Título da História</h1>
+                <p id="detail-author" class="author-text">Por Autor</p>
+
+               <!-- Grupo de Ações do Livro (Começar a ler + Biblioteca) -->
+<div class="main-actions-group" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; margin-bottom: 25px;">
+    
+    <!-- Botão Principal -->
+    <button id="btn-start-read" class="btn-vip" style="max-width: 220px; margin: 0;" onclick="iniciarLeituraPrimeiroCap()">
+        📖 Começar a Ler
+    </button>
+
+    <!-- Botões de Status (Alinhados na mesma linha/bloco) -->
+    <div class="actions-bar" style="display: flex; gap: 8px; align-items: center;">
+        <button id="btn-status-favorito" class="btn-action-status" onclick="alterarStatusBiblioteca('favorito')">
+            ❤️ Favorito
+        </button>
+        <button id="btn-status-para_ler" class="btn-action-status" onclick="alterarStatusBiblioteca('para_ler')">
+            🔖 Para Ler
+        </button>
+        <button id="btn-status-concluido" class="btn-action-status" onclick="alterarStatusBiblioteca('concluido')">
+            ✅ Concluído
+        </button>
+    </div>
+
+</div>
+        <div class="tabs-nav">
+            <button id="tab-btn-synopsis" class="tab-btn active" onclick="alternarAbaDetalhes('synopsis')">Resumo</button>
+            <button id="tab-btn-chapters" class="tab-btn" onclick="alternarAbaDetalhes('chapters')">Capítulos</button>
+        </div>
+
+        <div id="tab-content-synopsis" class="tab-content">
+            <p id="detail-synopsis" class="synopsis-text"></p>
+        </div>
+
+        <div id="tab-content-chapters" class="tab-content hidden">
+            <div class="chapters-list"></div>
+        </div>
+    </section>
+
+    <!-- VISÃO: MEU PERFIL -->
+    <section id="view-profile" class="view hidden">
+        <div class="profile-container">
+            <button class="btn-back" onclick="mostrarHome()">← Voltar para o início</button>
+
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar-large" id="profile-avatar-large">U</div>
+                    <div class="profile-header-info">
+                        <h2 id="profile-display-name">Carregando...</h2>
+                        <p id="profile-email" class="text-secondary">email@exemplo.com</p>
+                        <div id="profile-badge-container" class="margin-top-sm"></div>
+                    </div>
+                </div>
+
+                <hr class="profile-divider" />
+
+                <div class="profile-section">
+                    <h3>Detalhes da Assinatura</h3>
+                    <div id="profile-subscription-box" class="subscription-box"></div>
+                </div>
+
+                <hr class="profile-divider" />
+
+                <div class="profile-section">
+                    <h3>Dados da Conta</h3>
+                    <form id="form-update-profile" onsubmit="salvarPerfilLeitor(event)">
+                        <div class="form-group">
+                            <label for="profile-input-name">Apelido / Nome de Exibição</label>
+                            <input type="text" id="profile-input-name" placeholder="Como quer ser chamado?" required />
+                        </div>
+                        <button type="submit" class="btn-vip" style="width: auto; padding: 10px 24px;">Salvar Alterações</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- VISÃO: MINHA BIBLIOTECA -->
+<section id="view-library" class="view hidden">
+    <div class="container-biblioteca" style="padding: 20px;">
+        <button class="btn-back" onclick="mostrarHome()">← Voltar ao Catálogo</button>
+        <h2 style="margin-top: 15px;">📚 Minha Biblioteca</h2>
+
+        <!-- Abas de Navegação -->
+        <div class="tabs-biblioteca" style="display: flex; gap: 10px; margin: 20px 0;">
+            <button class="tab-btn active" id="tab-bib-lendo" onclick="filtrarBiblioteca('lendo')">📖 Lendo</button>
+            <button class="tab-btn" id="tab-bib-favorito" onclick="filtrarBiblioteca('favorito')">❤️ Favoritos</button>
+            <button class="tab-btn" id="tab-bib-para_ler" onclick="filtrarBiblioteca('para_ler')">🔖 Para Ler</button>
+            <button class="tab-btn" id="tab-bib-concluido" onclick="filtrarBiblioteca('concluido')">✅ Concluídos</button>
+        </div>
+
+        <!-- Container dos Cards -->
+        <div id="grid-livros" class="grid-livros">
+            <p style="color: var(--text-secondary);">Carregando sua biblioteca...</p>
+        </div>
+    </div>
+    
+</section>
+    <!-- MODAL DE LOGIN, CADASTRO E RECUPERAÇÃO -->
+    <div id="modal-auth" class="modal-overlay hidden">
+        <div class="auth-card">
+            <button onclick="fecharModalAuth()" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #888; font-size: 1.2rem; cursor: pointer;">✕</button>
+            
+            <div class="auth-tabs">
+                <button id="tab-login" class="auth-tab active" onclick="alternarAbaAuth('login')">Entrar</button>
+                <button id="tab-register" class="auth-tab" onclick="alternarAbaAuth('register')">Cadastrar</button>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>E-mail:</label>
+                <input type="email" id="reader-email" placeholder="seuemail@exemplo.com">
+            </div>
+
+            <div class="form-group" id="group-password" style="margin-bottom: 1.5rem;">
+                <label>Senha:</label>
+                <input type="password" id="reader-password" placeholder="Sua senha">
+            </div>
+
+            <button id="btn-auth-action" class="btn-vip" style="width: 100%; border-radius: 8px;" onclick="executarAuthLeitor()">Entrar</button>
+
+            <div class="auth-links">
+                <a id="link-forgot-password" onclick="alternarAbaAuth('forgot')">Esqueceu a senha?</a>
+                <a id="link-back-login" class="hidden" onclick="alternarAbaAuth('login')">Voltar para o Login</a>
+            </div>
+
+            <p id="auth-error-msg" style="color: #ff3b69; margin-top: 1rem; font-size: 0.85rem; display: none; text-align: center;"></p>
+        </div>
+    </div>
+
+    <!-- MODAL DE DIGITAR NOVA SENHA (REDEFINIÇÃO VIA LINK) -->
+    <div id="modal-reset-password" class="modal-overlay hidden">
+        <div class="auth-card">
+            <h3 style="color:#fff; text-align:center; margin-bottom: 1rem;">🔑 Digite sua Nova Senha</h3>
+            <p style="font-size:0.85rem; color:#aaa; margin-bottom:1.5rem; text-align:center;">
+                Cadastre sua nova senha abaixo para atualizar sua conta.
+            </p>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Nova Senha:</label>
+                <input type="password" id="new-password-input" placeholder="Mínimo 6 caracteres">
+            </div>
+
+            <button class="btn-vip" style="width: 100%; border-radius: 8px;" onclick="salvarNovaSenha()">Atualizar Senha</button>
+            <p id="reset-error-msg" style="color: #ff3b69; margin-top: 1rem; font-size: 0.85rem; display: none; text-align: center;"></p>
+        </div>
+    </div>
+
+    <!-- MODAL DE PLANOS VIP (PIX DIRECT) -->
+    <div id="modal-vip" class="modal-overlay hidden">
+        <div class="vip-card-modal">
+            <button onclick="fecharModalVIP()" style="position: absolute; right: 20px; top: 20px; background: none; border: none; color: #888; font-size: 1.4rem; cursor: pointer;">✕</button>
+
+            <h2 class="vip-header-title">Escolha seu Passe VIP 🔥</h2>
+            <p class="vip-subtitle">Desbloqueie todos os capítulos do Capítulo 3 em diante!</p>
+
+            <div class="plans-grid">
+                <div class="plan-card" onclick="selecionarPlano('vip7', this)">
+                    <div class="plan-days">7 Dias</div>
+                    <div class="plan-price">R$ 9,90</div>
+                    <div class="plan-desc">Acesso total por 1 semana.</div>
+                </div>
+
+                <div class="plan-card" onclick="selecionarPlano('vip15', this)">
+                    <div class="plan-days">15 Dias</div>
+                    <div class="plan-price">R$ 14,90</div>
+                    <div class="plan-desc">Acesso por duas semanas inteiras.</div>
+                </div>
+
+                <div class="plan-card featured selected" onclick="selecionarPlano('vip30', this)">
+                    <div class="plan-badge">Mais Popular</div>
+                    <div class="plan-days">30 Dias</div>
+                    <div class="plan-price">R$ 19,90 <span>/mês</span></div>
+                    <div class="plan-desc">Leitura ilimitada o mês todo.</div>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 8px;">Pague via Pix sem taxas extras:</p>
+                <button onclick="copiarPix()" class="btn-back" style="margin: 0; color: #ff3b69; text-decoration: underline;">
+                    📋 Clique aqui para copiar a Chave PIX
+                </button>
+            </div>
+
+            <button class="btn-vip" style="width: 100%; font-size: 1.1rem; padding: 14px; border-radius: 10px;" onclick="confirmarPagamentoPix()">
+                Já fiz o Pix! Confirmar Acesso ⚡
+            </button>
+        </div>
+    </div>
+
+    <!-- VISÃO: LEITOR DE CAPÍTULOS -->
+<section id="view-reader" class="view hidden">
+    <div class="reader-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <!-- Botão de Voltar -->
+        <button class="btn-back" onclick="voltarParaDetalhes()" style="margin-bottom: 20px;">← Voltar para o Livro</button>
+        
+        <!-- Título do Capítulo -->
+        <h2 id="reader-chapter-title" style="margin-bottom: 25px; color: #fff;"></h2>
+
+        <!-- Texto do Capítulo -->
+        <div id="reader-text" class="reader-content" style="line-height: 1.8; font-size: 1.1rem; color: #ddd;">
+            <!-- O texto do capítulo entra aqui via JS -->
+        </div>
+
+        <!-- Paywall / Aviso VIP para capítulos travados -->
+        <div id="paywall" class="paywall-box hidden" style="margin-top: 30px; padding: 30px; background: rgba(255,59,105,0.1); border: 1px solid #ff3b69; border-radius: 12px; text-align: center;">
+            <h3 style="color: #ff3b69; margin-bottom: 10px;">🔒 Conteúdo Exclusivo VIP</h3>
+            <p style="margin-bottom: 20px; color: #ccc;">Assine o VIP para continuar lendo este e todos os outros capítulos do catálogo!</p>
+            <button class="btn-vip" onclick="abrirModalVIP()" style="padding: 12px 24px; font-size: 1rem;">Seja VIP Agora 🔥</button>
+        </div>
+    </div>
+</section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
