@@ -127,7 +127,7 @@ async function carregarPerfilLeitor(userId) {
 
 function checarSeEhVip() {
     if (!perfilLeitor) return false;
-    if (perfilLeitor.eh_vip) return true;
+    if (perfilLeitor.eh_vip || perfilLeitor.eh_admin) return true;
 
     if (perfilLeitor.subscription_until) {
         const dataExpiracao = new Date(perfilLeitor.subscription_until);
@@ -570,6 +570,9 @@ function filtrarCategoria(categoria) {
     }
 }
 
+// -------------------------------------------------------------
+// FUNÇÃO CORRIGIDA: EXIBIÇÃO DINÂMICA DE TAGS NOS CAPÍTULOS
+// -------------------------------------------------------------
 async function carregarCapitulosDaHistoria(tituloHistoria) {
     const listaContainer = document.querySelector('.chapters-list');
     listaContainer.innerHTML = "<p style='color: var(--text-secondary);'>Carregando capítulos...</p>";
@@ -589,11 +592,26 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
     primeiroCapituloCarregado = capitulos[0];
     listaContainer.innerHTML = "";
 
+    const ehVipOuAdmin = checarSeEhVip();
+
     capitulos.forEach(cap => {
-        const ehBloqueado = cap.capitulo_numero > 2;
+        const ehCapituloVip = cap.capitulo_numero > 2;
+
+        let statusClass = 'free';
+        let statusTexto = 'Gratuito';
+
+        if (ehCapituloVip) {
+            if (ehVipOuAdmin) {
+                statusClass = 'vip-unlocked';
+                statusTexto = '⭐ VIP Liberado';
+            } else {
+                statusClass = 'vip';
+                statusTexto = '🔒 Exclusivo VIP';
+            }
+        }
 
         const item = document.createElement('div');
-        item.className = `chapter-item ${ehBloqueado ? 'locked' : ''}`;
+        item.className = `chapter-item ${(ehCapituloVip && !ehVipOuAdmin) ? 'locked' : ''}`;
         item.onclick = () => abrirLeitorCapitulo(cap);
 
         item.innerHTML = `
@@ -601,8 +619,8 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
                 <strong>Capítulo ${cap.capitulo_numero}</strong>
                 <p>${cap.capitulo_titulo}</p>
             </div>
-            <span class="status ${ehBloqueado ? 'vip' : 'free'}">
-                ${ehBloqueado ? '🔒 Exclusivo VIP' : 'Gratuito'}
+            <span class="status ${statusClass}" style="${ehVipOuAdmin && ehCapituloVip ? 'color: #4caf50; font-weight: bold;' : ''}">
+                ${statusTexto}
             </span>
         `;
         listaContainer.appendChild(item);
@@ -885,5 +903,66 @@ async function alterarStatusBiblioteca(novoStatus) {
         }
     } catch (err) {
         console.error("Erro ao alterar status:", err);
+    }
+}
+
+// -------------------------------------------------------------
+// GERENCIAMENTO DE LEITORES (EXCLUSIVO PARA O ADMIN.HTML)
+// -------------------------------------------------------------
+
+// Busca todos os leitores do Supabase e renderiza na tabela do admin.html
+async function carregarLeitoresParaGerenciar() {
+    const tbody = document.getElementById('admin-users-list');
+    if (!tbody) return;
+
+    tbody.innerHTML = "<tr><td colspan='3' style='padding:15px; color:#aaa;'>Buscando leitores...</td></tr>";
+
+    const { data: leitores, error } = await supabaseClient
+        .from('perfis_leitores')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error || !leitores || leitores.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='3' style='padding:15px; color:#aaa;'>Nenhum leitor encontrado.</td></tr>";
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    leitores.forEach(l => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+
+        tr.innerHTML = `
+            <td style="padding: 10px;">
+                <strong>${l.nome || 'Sem Nome'}</strong><br>
+                <small style="color:#aaa;">ID: ${l.id}</small>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+                <input type="checkbox" ${l.eh_vip ? 'checked' : ''} onchange="alterarPermissaoLeitor('${l.id}', 'eh_vip', this.checked)">
+            </td>
+            <td style="padding: 10px; text-align: center;">
+                <input type="checkbox" ${l.eh_admin ? 'checked' : ''} onchange="alterarPermissaoLeitor('${l.id}', 'eh_admin', this.checked)">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Atualiza permissão diretamente no Supabase ao marcar/desmarcar o checkbox
+async function alterarPermissaoLeitor(userId, campo, valor) {
+    const payload = {};
+    payload[campo] = valor;
+
+    const { error } = await supabaseClient
+        .from('perfis_leitores')
+        .update(payload)
+        .eq('id', userId);
+
+    if (error) {
+        alert("Erro ao alterar permissão: " + error.message);
+        carregarLeitoresParaGerenciar(); // Reverte o estado do checkbox em caso de erro
+    } else {
+        console.log(`Permissão ${campo} atualizada para ${valor} no leitor ${userId}`);
     }
 }
