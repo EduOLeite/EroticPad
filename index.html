@@ -91,6 +91,15 @@
     <header class="navbar">
         <div class="logo" onclick="mostrarHome()" style="cursor: pointer;">Erotic<span>Pad</span></div>
         
+        <div class="nav-tabs">
+            <button id="btn-livros" class="tab-btn active" onclick="alternarTipoConteudo('livro')">
+                📚 Livros
+            </button>
+            <button id="btn-contos" class="tab-btn" onclick="alternarTipoConteudo('conto')">
+                🔥 Contos
+            </button>
+        </div>
+
         <div id="nav-user-area" style="display: flex; align-items: center; gap: 12px;">
             <!-- Renderizado dinamicamente via JS -->
         </div>
@@ -100,12 +109,12 @@
     <section id="view-home" class="view">
         <div class="categories-bar">
             <button class="chip active" onclick="filtrarCategoria('Todos')">Todos</button>
-            <button class="chip" onclick="filtrarCategoria('Dark Romance')">Dark Romance</button>
+            <button class="chip" onclick="filtrarCategoria('Aventura & Arqueológica')">Aventura & Arqueológica</button>
             <button class="chip" onclick="filtrarCategoria('Fantasia')">Fantasia</button>
             <button class="chip" onclick="filtrarCategoria('Suspense & Mistério')">Suspense & Mistério</button>
             <button class="chip" onclick="filtrarCategoria('Romance Futurista')">Romance Futurista</button>
             <button class="chip" onclick="filtrarCategoria('Terror & Sobrenatural')">Terror & Sobrenatural</button>
-            <button class="chip" onclick="filtrarCategoria('Amores Proibidos')">Amores Proibidos</button>
+            <button class="chip" onclick="filtrarCategoria('Amores & Pecados')">Amores & Pecados</button>
             <button class="chip" onclick="filtrarCategoria('CEO & Submissão')">CEO & Submissão</button>
         </div>
 
@@ -115,13 +124,13 @@
         </div>
     </section>
 
-    <!-- Visão 2: Detalhes do Livro -->
+    <!-- Visão 2: Detalhes do Livro ou Conto -->
     <section id="view-details" class="view hidden">
         <button class="btn-back" onclick="mostrarHome()">← Voltar ao Catálogo</button>
         
         <div class="story-detail-container">
             <div class="story-cover-box">
-                <img id="detail-cover" src="" alt="Capa do Livro">
+                <img id="detail-cover" src="" alt="Capa da Obra">
             </div>
 
             <div class="story-meta-box">
@@ -129,7 +138,7 @@
                 <h1 id="detail-title">Título da História</h1>
                 <p id="detail-author" class="author-text">Por Autor</p>
 
-                <!-- Grupo de Ações do Livro (Começar a ler + Biblioteca) -->
+                <!-- Grupo de Ações da Obra -->
                 <div class="main-actions-group" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; margin-bottom: 25px;">
                     
                     <!-- Botão Principal -->
@@ -137,7 +146,7 @@
                         📖 Começar a Ler
                     </button>
 
-                    <!-- Botões de Status (Alinhados na mesma linha/bloco) -->
+                    <!-- Botões de Status -->
                     <div class="actions-bar" style="display: flex; gap: 8px; align-items: center;">
                         <button id="btn-status-favorito" class="btn-action-status" onclick="alterarStatusBiblioteca('favorito')">
                             ❤️ Favorito
@@ -152,7 +161,7 @@
 
                 </div>
 
-                <div class="tabs-nav">
+                <div class="tabs-nav" id="container-tabs-nav">
                     <button id="tab-btn-synopsis" class="tab-btn active" onclick="alternarAbaDetalhes('synopsis')">Resumo</button>
                     <button id="tab-btn-chapters" class="tab-btn" onclick="alternarAbaDetalhes('chapters')">Capítulos</button>
                 </div>
@@ -258,7 +267,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE DIGITAR NOVA SENHA (REDEFINIÇÃO VIA LINK) -->
+    <!-- MODAL DE DIGITAR NOVA SENHA -->
     <div id="modal-reset-password" class="modal-overlay hidden">
         <div class="auth-card">
             <h3 style="color:#fff; text-align:center; margin-bottom: 1rem;">🔑 Digite sua Nova Senha</h3>
@@ -318,18 +327,18 @@
         </div>
     </div>
 
-    <!-- VISÃO: LEITOR DE CAPÍTULOS -->
+    <!-- VISÃO: LEITOR DE CAPÍTULOS / CONTOS -->
     <section id="view-reader" class="view hidden">
         <div class="reader-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
             <!-- Botão de Voltar -->
-            <button class="btn-back" onclick="voltarParaDetalhes()" style="margin-bottom: 20px;">← Voltar para o Livro</button>
+            <button class="btn-back" onclick="voltarParaDetalhes()" style="margin-bottom: 20px;">← Voltar para a Obra</button>
             
-            <!-- Título do Capítulo -->
+            <!-- Título do Capítulo/Conto -->
             <h2 id="reader-chapter-title" style="margin-bottom: 25px; color: #fff;"></h2>
 
-            <!-- Texto do Capítulo -->
+            <!-- Texto do Capítulo/Conto -->
             <div id="reader-text" class="reader-content" style="line-height: 1.8; font-size: 1.1rem; color: #ddd;">
-                <!-- O texto do capítulo entra aqui via JS -->
+                <!-- O texto entra aqui via JS -->
             </div>
 
             <!-- Paywall / Aviso VIP para capítulos travados -->

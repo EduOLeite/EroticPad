@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Novel</title>
+    <title>Painel Administrativo - EroticPad</title>
     <link rel="stylesheet" href="style.css">
     <!-- CDN do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -45,13 +45,21 @@
         <!-- PAINEL DASHBOARD (ESCONDIDO POR PADRÃO) -->
         <section id="sec-dashboard" class="hidden">
 
-            <!-- Formulário 1: Criar Nova História -->
+            <!-- FORMULÁRIO 1: CADASTRAR NOVA OBRA (HISTÓRIA OU CONTO) -->
             <div class="admin-card">
-                <h2>📚 1. Cadastrar Nova História</h2>
+                <h2>📚 1. Cadastrar Nova Obra</h2>
                 
-                <form onsubmit="salvarNovaHistoria(event)">
+                <form onsubmit="salvarNovaObra(event)">
                     <div class="form-group">
-                        <label for="story-title">Título da História</label>
+                        <label for="story-type">Tipo de Obra</label>
+                        <select id="story-type" onchange="alternarTipoObra()" required>
+                            <option value="historia">História (Com Capítulos)</option>
+                            <option value="conto">Conto Único (Sem Capítulos)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="story-title">Título</label>
                         <input type="text" id="story-title" placeholder="Ex: O Império Sombrio" required>
                     </div>
 
@@ -64,39 +72,50 @@
                         <label for="story-category">Categoria / Gênero</label>
                         <select id="story-category" required>
                             <option value="">Selecione...</option>
-                            <option value="Ação">Ação</option>
-                            <option value="Aventura">Aventura</option>
+                            <option value="Aventura & Arqueológica">Aventura & Arqueológica</option>
                             <option value="Fantasia">Fantasia</option>
-                            <option value="Romance">Romance</option>
-                            <option value="Sci-Fi">Sci-Fi</option>
-                            <option value="Terror">Terror</option>
+                            <option value="Suspense & Mistério">Suspense & Mistério</option>
+                            <option value="Romance Futurista">Romance Futurista</option>
+                            <option value="Terror & Sobrenatural">Terror & Sobrenatural</option>
+                            <option value="Amores & Pecados">Amores & Pecados</option>
+                            <option value="CEO & Submissão">CEO & Submissão</option>
                         </select>
                     </div>
 
+                    <!-- UPLOAD DE CAPA DIRETO DO COMPUTADOR -->
                     <div class="form-group">
-                        <label for="story-cover-url">URL da Capa (Link da Imagem)</label>
-                        <input type="url" id="story-cover-url" placeholder="https://site.com/imagem.jpg">
+                        <label for="story-cover-file">Imagem da Capa (Upload do Computador)</label>
+                        <input type="file" id="story-cover-file" accept="image/*" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="story-synopsis">Sinopse</label>
+                        <label for="story-synopsis">Sinopse / Resumo</label>
                         <textarea id="story-synopsis" rows="4" placeholder="Escreva um resumo cativante..." required></textarea>
                     </div>
 
-                    <button type="submit" class="btn-primary">Criar História</button>
+                    <!-- CAMPO EXCLUSIVO PARA CONTO (EXIBIDO APENAS SE FOR CONTO) -->
+                    <div class="form-group hidden" id="group-conto-content">
+                        <label for="story-conto-file">Importar Texto do Conto (.txt UTF-8)</label>
+                        <input type="file" id="story-conto-file" accept=".txt" onchange="lerArquivoTexto(this, 'story-conto-content')">
+                        <br>
+                        <label for="story-conto-content">Texto Completo do Conto</label>
+                        <textarea id="story-conto-content" rows="12" placeholder="Cole aqui ou importe o texto do arquivo .txt..."></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-save-obra" class="btn-primary">Criar Obra</button>
                 </form>
             </div>
 
 
-            <!-- Formulário 2: Adicionar Capítulo -->
+            <!-- FORMULÁRIO 2: PUBLICAR NOVO CAPÍTULO (HISTÓRIAS) -->
             <div class="admin-card" style="margin-top: 2rem;">
-                <h2>📝 2. Publicar Novo Capítulo</h2>
+                <h2>📝 2. Publicar Novo Capítulo (Apenas Histórias)</h2>
 
                 <form onsubmit="salvarNovoCapitulo(event)">
                     <div class="form-group">
                         <label for="admin-select-story">Selecione a História</label>
                         <select id="admin-select-story" required>
-                            <!-- Preenchido dinamicamente via JS -->
+                            <!-- Preenchido via JS apenas com Histórias -->
                         </select>
                     </div>
 
@@ -111,8 +130,13 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="chapter-file">Importar Arquivo de Texto do Capítulo (.txt UTF-8)</label>
+                        <input type="file" id="chapter-file" accept=".txt" onchange="lerArquivoTexto(this, 'chapter-content')">
+                    </div>
+
+                    <div class="form-group">
                         <label for="chapter-content">Conteúdo do Capítulo</label>
-                        <textarea id="chapter-content" rows="12" placeholder="Cole aqui o texto do capítulo..." required></textarea>
+                        <textarea id="chapter-content" rows="12" placeholder="Cole aqui o texto ou selecione o arquivo .txt acima..." required></textarea>
                     </div>
 
                     <button type="submit" class="btn-primary">Publicar Capítulo</button>
@@ -120,7 +144,7 @@
             </div>
 
 
-            <!-- Formulário 3: Gerenciar Capítulos Existentes -->
+            <!-- FORMULÁRIO 3: GERENCIAR CAPÍTULOS -->
             <div class="admin-card" style="margin-top: 2rem;">
                 <h2>🗑️ 3. Gerenciar Capítulos Existentes</h2>
                 
@@ -137,9 +161,14 @@
             </div>
 
 
-            <!-- Formulário 4: Gerenciar Leitores e Permissões -->
+            <!-- FORMULÁRIO 4: GERENCIAR OBRAS E PERMISSÕES DE LEITORES -->
             <div class="admin-card" style="margin-top: 2rem;">
-                <h2>👥 4. Gerenciar Leitores (VIP & Admin)</h2>
+                <h2>📚 4. Gerenciar Obras (Histórias & Contos)</h2>
+                <div id="admin-obras-list" class="chapters-list" style="margin-top: 1rem; margin-bottom: 2rem;">
+                    <!-- Lista de obras para exclusão carregada via JS -->
+                </div>
+
+                <h2>👥 Gerenciar Leitores (VIP & Admin)</h2>
                 <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 1rem;">
                     Altere aqui o status de VIP dos leitores ou conceda acesso Admin a outros usuários.
                 </p>
@@ -166,19 +195,16 @@
 
     <!-- SCRIPT DE LÓGICA DO ADMIN -->
     <script>
-        // Configuração do Supabase
         const SUPABASE_URL = "https://xkggqzzzuvrcpwtrbatm.supabase.co";
         const SUPABASE_KEY = "sb_publishable_TtSVvv-5iVjARmijuAdhzg_8SYxuDnT";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let historiasCadastradas = [];
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
             await verificarSessaoAdmin();
         });
 
-        // 1. VERIFICAÇÃO DE SESSÃO E PERMISSÃO
         async function verificarSessaoAdmin() {
             const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -187,7 +213,6 @@
                 return;
             }
 
-            // Checa se o usuário logado tem eh_admin = true na tabela perfis_leitores
             const { data: perfil, error } = await supabaseClient
                 .from('perfis_leitores')
                 .select('eh_admin')
@@ -216,10 +241,10 @@
             document.getElementById('btn-logout').classList.remove('hidden');
 
             atualizarSelectHistoriasAdmin();
+            carregarObrasParaGerenciar();
             carregarLeitoresParaGerenciar();
         }
 
-        // 2. AUTHENTICAÇÃO DO ADMIN
         async function fazerLoginAdmin(e) {
             e.preventDefault();
             const email = document.getElementById('admin-email').value.trim();
@@ -243,7 +268,32 @@
             mostrarLogin();
         }
 
-        // 3. CARREGAR SELECTS DE HISTÓRIAS
+        // LEITURA DE ARQUIVO .TXT (UTF-8)
+        function lerArquivoTexto(input, targetTextareaId) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(targetTextareaId).value = e.target.result;
+            };
+            reader.readAsText(file, "UTF-8");
+        }
+
+        function alternarTipoObra() {
+            const tipo = document.getElementById('story-type').value;
+            const groupConto = document.getElementById('group-conto-content');
+            const fieldConto = document.getElementById('story-conto-content');
+
+            if (tipo === 'conto') {
+                groupConto.classList.remove('hidden');
+                fieldConto.setAttribute('required', 'true');
+            } else {
+                groupConto.classList.add('hidden');
+                fieldConto.removeAttribute('required');
+            }
+        }
+
         async function atualizarSelectHistoriasAdmin() {
             const select1 = document.getElementById('admin-select-story');
             const select2 = document.getElementById('admin-manage-story-select');
@@ -256,9 +306,10 @@
             if (error || !data) return;
 
             historiasCadastradas = data;
+            const apenasHistorias = data.filter(h => h.tipo !== 'conto');
 
             let options = '<option value="">Selecione uma história...</option>';
-            data.forEach(h => {
+            apenasHistorias.forEach(h => {
                 options += `<option value="${h.titulo}">${h.titulo}</option>`;
             });
 
@@ -269,30 +320,80 @@
             }
         }
 
-        // 4. CADASTRAR HISTÓRIA
-        async function salvarNovaHistoria(e) {
+        async function salvarNovaObra(e) {
             e.preventDefault();
 
-            const titulo = document.getElementById('story-title').value.trim();
-            const autor = document.getElementById('story-author').value.trim();
-            const categoria = document.getElementById('story-category').value;
-            const capa_url = document.getElementById('story-cover-url').value.trim();
-            const sinopse = document.getElementById('story-synopsis').value.trim();
+            const btnSave = document.getElementById('btn-save-obra');
+            btnSave.disabled = true;
+            btnSave.innerText = "Enviando arquivo e salvando...";
 
-            const { error } = await supabaseClient
-                .from('historias')
-                .insert([{ titulo, autor, categoria, capa_url, sinopse }]);
+            try {
+                const tipo = document.getElementById('story-type').value;
+                const titulo = document.getElementById('story-title').value.trim();
+                const autor = document.getElementById('story-author').value.trim();
+                const categoria = document.getElementById('story-category').value;
+                const sinopse = document.getElementById('story-synopsis').value.trim();
+                const fileInput = document.getElementById('story-cover-file');
+                const file = fileInput.files[0];
 
-            if (error) {
-                alert("Erro ao criar história: " + error.message);
-            } else {
-                alert("✨ História cadastrada com sucesso!");
+                if (!file) {
+                    alert("Selecione um arquivo de imagem para a capa!");
+                    btnSave.disabled = false;
+                    btnSave.innerText = "Criar Obra";
+                    return;
+                }
+
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = `capas/${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('capas')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    throw new Error("Erro no upload da capa: " + uploadError.message);
+                }
+
+                const { data: publicUrlData } = supabaseClient.storage
+                    .from('capas')
+                    .getPublicUrl(filePath);
+
+                const capa_url = publicUrlData.publicUrl;
+
+                const payload = {
+                    tipo,
+                    titulo,
+                    autor,
+                    categoria,
+                    capa_url,
+                    sinopse
+                };
+
+                if (tipo === 'conto') {
+                    payload.conteudo = document.getElementById('story-conto-content').value;
+                }
+
+                const { error: dbError } = await supabaseClient
+                    .from('historias')
+                    .insert([payload]);
+
+                if (dbError) throw dbError;
+
+                alert("✨ Obra cadastrada com sucesso!");
                 e.target.reset();
+                alternarTipoObra();
                 atualizarSelectHistoriasAdmin();
+                carregarObrasParaGerenciar();
+
+            } catch (err) {
+                alert("❌ Erro: " + err.message);
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerText = "Criar Obra";
             }
         }
 
-        // 5. CADASTRAR CAPÍTULO
         async function salvarNovoCapitulo(e) {
             e.preventDefault();
 
@@ -319,7 +420,6 @@
             }
         }
 
-        // 6. GERENCIAR E DELETAR CAPÍTULOS
         async function carregarCapitulosParaGerenciar() {
             const select = document.getElementById('admin-manage-story-select');
             const listElem = document.getElementById('admin-chapters-list');
@@ -381,7 +481,59 @@
             }
         }
 
-        // 7. GERENCIAR LEITORES E PERMISSÕES (VIP & ADMIN)
+        async function carregarObrasParaGerenciar() {
+            const listElem = document.getElementById('admin-obras-list');
+            if (!listElem) return;
+
+            const { data: obras, error } = await supabaseClient
+                .from('historias')
+                .select('*')
+                .order('titulo', { ascending: true });
+
+            if (error || !obras || obras.length === 0) {
+                listElem.innerHTML = "<p style='color:#aaa;'>Nenhuma obra cadastrada.</p>";
+                return;
+            }
+
+            listElem.innerHTML = "";
+            obras.forEach(o => {
+                const div = document.createElement('div');
+                div.style.display = "flex";
+                div.style.justifyContent = "space-between";
+                div.style.alignItems = "center";
+                div.style.padding = "10px";
+                div.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+
+                const tipoLabel = o.tipo === 'conto' ? '📖 Conto' : '📚 História';
+
+                div.innerHTML = `
+                    <div>
+                        <strong>[${tipoLabel}]</strong> ${o.titulo} <small style="color:#aaa;">(${o.categoria})</small>
+                    </div>
+                    <button class="btn-secondary" onclick="deletarObra(${o.id})" style="background:#ff3b69; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">
+                        🗑️ Excluir Obra
+                    </button>
+                `;
+                listElem.appendChild(div);
+            });
+        }
+
+        async function deletarObra(id) {
+            if (!confirm("Tem certeza que deseja excluir esta obra? Todos os capítulos vinculados também serão excluídos.")) return;
+
+            const { error } = await supabaseClient
+                .from('historias')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert("Erro ao deletar obra: " + error.message);
+            } else {
+                atualizarSelectHistoriasAdmin();
+                carregarObrasParaGerenciar();
+            }
+        }
+
         async function carregarLeitoresParaGerenciar() {
             const tbody = document.getElementById('admin-users-list');
             if (!tbody) return;

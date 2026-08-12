@@ -24,13 +24,30 @@ body {
 
 /* Navbar */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background-color: rgba(12, 10, 13, 0.95);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    position: sticky; top: 0; z-index: 100;
+  display: flex;
+  justify-content: space-between; /* Distribui Esquerda - Centro - Direita */
+  align-items: center;
+  padding: 15px 40px;
+  background-color: #0f0f0f;
+}
+
+/* Garante alinhamento equilibrado dos lados */
+.logo {
+  flex: 1;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#nav-user-area {
+  flex: 1;
+  justify-content: flex-end; /* Joga os botões de perfil para a extrema direita */
 }
 
 .logo {

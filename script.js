@@ -3,6 +3,7 @@ const SUPABASE_URL = "https://xkggqzzzuvrcpwtrbatm.supabase.co";
 const SUPABASE_KEY = "sb_publishable_TtSVvv-5iVjARmijuAdhzg_8SYxuDnT";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let obraAtualObjeto = null; // Guarda o objeto completo da obra atual
 let historiaAtual = "";
 let todasHistorias = [];
 let leitorAtual = null;
@@ -11,8 +12,9 @@ let modoAuth = 'login'; // 'login', 'register', 'forgot'
 let planoSelecionado = 'vip30';
 let primeiroCapituloCarregado = null;
 let abaBibliotecaAtual = 'lendo';
+let tipoConteudoAtual = 'livro'; // 'livro' ou 'conto'
 
-// Chave PIX para pagamentos manuais sem taxa
+// Chave PIX para pagamentos manuais
 const MINHA_CHAVE_PIX = "69992752883";
 
 // -------------------------------------------------------------
@@ -21,7 +23,6 @@ const MINHA_CHAVE_PIX = "69992752883";
 document.addEventListener('DOMContentLoaded', async () => {
     carregarHistorias();
     
-    // Escuta em tempo real mudanças de autenticação (Login, Logout, Token)
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
             abrirModalResetSenha();
@@ -36,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Checa se o link do e-mail veio com token de recuperação na URL
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     if (hashParams.get('type') === 'recovery') {
         abrirModalResetSenha();
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await verificarSessaoLeitor();
     }
 
-    // Fechar dropdown de perfil ao clicar fora
     document.addEventListener('click', (e) => {
         const container = document.getElementById('dropdown-container');
         if (container && !container.contains(e.target)) {
@@ -462,6 +461,7 @@ function mostrarHome() {
 }
 
 function abrirHistoria(historia) {
+    obraAtualObjeto = historia;
     historiaAtual = historia.titulo;
     
     verificarStatusAtualBiblioteca(historia.titulo);
@@ -473,12 +473,20 @@ function abrirHistoria(historia) {
     document.getElementById('detail-category').innerText = historia.categoria;
     document.getElementById('detail-synopsis').innerText = historia.sinopse;
 
-    alternarAbaDetalhes('synopsis');
+    const navTabs = document.getElementById('container-tabs-nav');
+
+    if (historia.tipo === 'conto') {
+        if (navTabs) navTabs.classList.add('hidden');
+        document.getElementById('tab-content-synopsis').classList.remove('hidden');
+        document.getElementById('tab-content-chapters').classList.add('hidden');
+    } else {
+        if (navTabs) navTabs.classList.remove('hidden');
+        alternarAbaDetalhes('synopsis');
+        carregarCapitulosDaHistoria(historia.titulo);
+    }
 
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
     document.getElementById('view-details').classList.remove('hidden');
-
-    carregarCapitulosDaHistoria(historia.titulo);
 }
 
 function alternarAbaDetalhes(aba) {
@@ -505,19 +513,34 @@ function voltarParaDetalhes() {
     document.getElementById('view-details').classList.remove('hidden');
 }
 
+function alternarTipoConteudo(tipo) {
+    tipoConteudoAtual = tipo;
+
+    const btnLivros = document.getElementById('btn-livros');
+    const btnContos = document.getElementById('btn-contos');
+
+    if (btnLivros) btnLivros.classList.toggle('active', tipo === 'livro');
+    if (btnContos) btnContos.classList.toggle('active', tipo === 'conto');
+
+    carregarHistorias();
+}
+
 async function carregarHistorias() {
     const container = document.getElementById('stories-container');
     if (!container) return;
     
-    container.innerHTML = "<p style='color: var(--text-secondary);'>Carregando histórias...</p>";
+    container.innerHTML = "<p style='color: var(--text-secondary);'>Carregando conteúdo...</p>";
 
     const { data, error } = await supabaseClient
         .from('historias')
         .select('*')
+        .eq('tipo', tipoConteudoAtual)
         .order('id', { ascending: false });
 
     if (error || !data || data.length === 0) {
-        container.innerHTML = "<p style='color: var(--text-secondary);'>Nenhuma história cadastrada ainda.</p>";
+        const tipoTexto = tipoConteudoAtual === 'conto' ? 'conto' : 'livro';
+        container.innerHTML = `<p style='color: var(--text-secondary);'>Nenhum ${tipoTexto} cadastrado ainda.</p>`;
+        todasHistorias = [];
         return;
     }
 
@@ -536,6 +559,12 @@ function renderizarCardsHistorias(lista) {
         card.className = 'story-card';
         card.onclick = () => abrirHistoria(historia);
 
+        const badgeInfo = historia.tipo === 'conto' 
+            ? '<span class="free-badge" style="background: rgba(255, 59, 105, 0.15); color: #ff3b69;">Conto Único</span>' 
+            : '<span class="free-badge">Capítulos 1 e 2 Grátis</span>';
+
+        const labelConteudo = historia.tipo === 'conto' ? '🔥 Conto' : '📖 Capítulos';
+
         card.innerHTML = `
             <div class="card-cover" style="background-image: url('${capaImg}');">
                 <span class="tag">${historia.categoria}</span>
@@ -544,8 +573,8 @@ function renderizarCardsHistorias(lista) {
                 <h3>${historia.titulo}</h3>
                 <p class="author">Por ${historia.autor}</p>
                 <div class="card-footer">
-                    <span>📖 Capítulos</span>
-                    <span class="free-badge">Capítulos 1 e 2 Grátis</span>
+                    <span>${labelConteudo}</span>
+                    ${badgeInfo}
                 </div>
             </div>
         `;
@@ -570,9 +599,6 @@ function filtrarCategoria(categoria) {
     }
 }
 
-// -------------------------------------------------------------
-// FUNÇÃO CORRIGIDA: EXIBIÇÃO DINÂMICA DE TAGS NOS CAPÍTULOS
-// -------------------------------------------------------------
 async function carregarCapitulosDaHistoria(tituloHistoria) {
     const listaContainer = document.querySelector('.chapters-list');
     listaContainer.innerHTML = "<p style='color: var(--text-secondary);'>Carregando capítulos...</p>";
@@ -627,12 +653,47 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
     });
 }
 
+// INICIAR LEITURA TRATANDO LIVRO OU CONTO
 function iniciarLeituraPrimeiroCap() {
+    if (obraAtualObjeto && obraAtualObjeto.tipo === 'conto') {
+        abrirLeitorConto(obraAtualObjeto);
+        return;
+    }
+
     if (primeiroCapituloCarregado) {
         abrirLeitorCapitulo(primeiroCapituloCarregado);
     } else {
         alert("Ainda não há capítulos para este livro!");
     }
+}
+
+// EXIBIÇÃO DO CONTO COMPLETO
+function abrirLeitorConto(conto) {
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+
+    const readerView = document.getElementById('view-reader');
+    if (readerView) readerView.classList.remove('hidden');
+
+    const titleElem = document.getElementById('reader-chapter-title');
+    const textElem = document.getElementById('reader-text');
+    const paywallElem = document.getElementById('paywall');
+
+    if (titleElem) titleElem.innerText = conto.titulo;
+
+    let conteudos = conto.conteudo || "";
+    let paragrafos = conteudos
+        .split(/\n+/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+
+    if (textElem) {
+        textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
+    }
+
+    if (paywallElem) paywallElem.classList.add('hidden');
+
+    salvarProgressoBiblioteca(conto.titulo, 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function abrirLeitorCapitulo(capitulo) {
@@ -641,10 +702,8 @@ function abrirLeitorCapitulo(capitulo) {
         return;
     }
 
-    // 1. Esconde todas as telas
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
-    // 2. Exibe o leitor
     const readerView = document.getElementById('view-reader');
     if (readerView) {
         readerView.classList.remove('hidden');
@@ -653,7 +712,6 @@ function abrirLeitorCapitulo(capitulo) {
         return;
     }
 
-    // 3. Preenche o título e conteúdo
     const titleElem = document.getElementById('reader-chapter-title');
     const textElem = document.getElementById('reader-text');
     const paywallElem = document.getElementById('paywall');
@@ -682,7 +740,6 @@ function abrirLeitorCapitulo(capitulo) {
             textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
             if (paywallElem) paywallElem.classList.add('hidden');
             
-            // Salva o histórico na biblioteca_leitor
             salvarProgressoBiblioteca(capitulo.historia_titulo, capitulo.capitulo_numero);
         }
     }
@@ -703,10 +760,8 @@ function abrirBiblioteca() {
         return;
     }
 
-    // Esconde todas as visões ativas
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
-    // Exibe a biblioteca
     const libraryView = document.getElementById('view-library');
     if (libraryView) {
         libraryView.classList.remove('hidden');
@@ -819,6 +874,17 @@ async function salvarProgressoBiblioteca(tituloHistoria, numCapitulo) {
 }
 
 async function continuarLeituraBiblioteca(tituloHistoria, numCapitulo) {
+    const { data: obra } = await supabaseClient
+        .from('historias')
+        .select('*')
+        .eq('titulo', tituloHistoria)
+        .maybeSingle();
+
+    if (obra && obra.tipo === 'conto') {
+        abrirLeitorConto(obra);
+        return;
+    }
+
     const { data: cap } = await supabaseClient
         .from('capitulos')
         .select('*')
@@ -833,7 +899,6 @@ async function continuarLeituraBiblioteca(tituloHistoria, numCapitulo) {
     }
 }
 
-// Verifica e destaca o botão do status atual do livro
 async function verificarStatusAtualBiblioteca(tituloHistoria) {
     document.querySelectorAll('.btn-action-status').forEach(btn => btn.classList.remove('active-status'));
 
@@ -843,7 +908,7 @@ async function verificarStatusAtualBiblioteca(tituloHistoria) {
         .from('biblioteca_leitor')
         .select('status')
         .eq('user_id', leitorAtual.id)
-        .eq('historia_titulo', tituloHistoria)
+        .eq('historia_titulo', historiaAtual)
         .maybeSingle();
 
     if (item && item.status) {
@@ -852,7 +917,6 @@ async function verificarStatusAtualBiblioteca(tituloHistoria) {
     }
 }
 
-// Salva, altera ou remove o status no Supabase ao clicar
 async function alterarStatusBiblioteca(novoStatus) {
     if (!leitorAtual) {
         alert("🔒 Faça login para salvar livros na sua biblioteca!");
@@ -910,7 +974,6 @@ async function alterarStatusBiblioteca(novoStatus) {
 // GERENCIAMENTO DE LEITORES (EXCLUSIVO PARA O ADMIN.HTML)
 // -------------------------------------------------------------
 
-// Busca todos os leitores do Supabase e renderiza na tabela do admin.html
 async function carregarLeitoresParaGerenciar() {
     const tbody = document.getElementById('admin-users-list');
     if (!tbody) return;
@@ -949,7 +1012,6 @@ async function carregarLeitoresParaGerenciar() {
     });
 }
 
-// Atualiza permissão diretamente no Supabase ao marcar/desmarcar o checkbox
 async function alterarPermissaoLeitor(userId, campo, valor) {
     const payload = {};
     payload[campo] = valor;
@@ -961,7 +1023,7 @@ async function alterarPermissaoLeitor(userId, campo, valor) {
 
     if (error) {
         alert("Erro ao alterar permissão: " + error.message);
-        carregarLeitoresParaGerenciar(); // Reverte o estado do checkbox em caso de erro
+        carregarLeitoresParaGerenciar();
     } else {
         console.log(`Permissão ${campo} atualizada para ${valor} no leitor ${userId}`);
     }
