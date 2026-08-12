@@ -376,7 +376,7 @@ function abrirPerfil() {
             <div class="sub-free-box">
                 <div>
                     <h4 style="margin: 0 0 6px 0;">Plano Gratuito</h4>
-                    <p style="font-size: 0.85rem; color: #aaa; margin: 0;">Assine o VIP para liberar todos os capítulos bloqueados imediatamente!</p>
+                    <p style="font-size: 0.85rem; color: #aaa; margin: 0;">Assine o VIP para liberar todos os capítulos e contos imediatamente!</p>
                 </div>
                 <button class="btn-vip" onclick="abrirModalVIP()" style="width: auto; padding: 8px 18px; font-size: 0.9rem;">Virar VIP Agora 🔥</button>
             </div>
@@ -513,7 +513,17 @@ function voltarParaDetalhes() {
     document.getElementById('view-details').classList.remove('hidden');
 }
 
+// BLOQUEIO DA ABA CONTOS PARA NÃO-VIP
 function alternarTipoConteudo(tipo) {
+    if (tipo === 'conto') {
+        const ehVipOuAdmin = checarSeEhVip();
+        if (!ehVipOuAdmin) {
+            alert("🔒 A aba de Contos é exclusiva para assinantes VIP!");
+            abrirModalVIP();
+            return;
+        }
+    }
+
     tipoConteudoAtual = tipo;
 
     const btnLivros = document.getElementById('btn-livros');
@@ -560,7 +570,7 @@ function renderizarCardsHistorias(lista) {
         card.onclick = () => abrirHistoria(historia);
 
         const badgeInfo = historia.tipo === 'conto' 
-            ? '<span class="free-badge" style="background: rgba(255, 59, 105, 0.15); color: #ff3b69;">Conto Único</span>' 
+            ? '<span class="free-badge" style="background: rgba(255, 59, 105, 0.15); color: #ff3b69;">Exclusivo VIP 🔥</span>' 
             : '<span class="free-badge">Capítulos 1 e 2 Grátis</span>';
 
         const labelConteudo = historia.tipo === 'conto' ? '🔥 Conto' : '📖 Capítulos';
@@ -667,8 +677,10 @@ function iniciarLeituraPrimeiroCap() {
     }
 }
 
-// EXIBIÇÃO DO CONTO COMPLETO
+// EXIBIÇÃO DO CONTO COMPLETO COM PROTEÇÃO VIP
 function abrirLeitorConto(conto) {
+    const ehVip = checarSeEhVip();
+
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
     const readerView = document.getElementById('view-reader');
@@ -687,12 +699,17 @@ function abrirLeitorConto(conto) {
         .filter(p => p.length > 0);
 
     if (textElem) {
-        textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
+        if (!ehVip) {
+            const previa = paragrafos.slice(0, 2).map(p => `<p>${p}</p>`).join('');
+            textElem.innerHTML = previa;
+            if (paywallElem) paywallElem.classList.remove('hidden');
+        } else {
+            textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
+            if (paywallElem) paywallElem.classList.add('hidden');
+            salvarProgressoBiblioteca(conto.titulo, 1);
+        }
     }
 
-    if (paywallElem) paywallElem.classList.add('hidden');
-
-    salvarProgressoBiblioteca(conto.titulo, 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
