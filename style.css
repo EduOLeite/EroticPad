@@ -38,15 +38,27 @@ body {
 
 .nav-tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   background: rgba(255, 255, 255, 0.05);
-  padding: 4px;
+  padding: 3px;
   border-radius: 30px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden; /* Garante que nada vaze para fora da pílula arredondada */
+  align-items: center;
+}
+
+/* Ajuste fino para os botões dentro das abas da navbar não estourarem */
+.nav-tabs .tab-btn,
+.nav-tabs button {
+  border-radius: 20px;
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.9rem;
 }
 
 #nav-user-area {
   flex: 1;
+  display: flex;
   justify-content: flex-end; /* Joga os botões de perfil para a extrema direita */
 }
 
@@ -460,7 +472,7 @@ body {
 
 .sub-free-box {
     display: flex;
-    justify-content: space-between;
+    justify-space: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 15px;
@@ -493,7 +505,7 @@ body {
   padding-bottom: 10px;
 }
 
-.tab-btn {
+.tabs-biblioteca .tab-btn {
   background: transparent;
   border: none;
   color: #888;
@@ -504,7 +516,8 @@ body {
   transition: 0.2s;
 }
 
-.tab-btn.active, .tab-btn:hover {
+.tabs-biblioteca .tab-btn.active, 
+.tabs-biblioteca .tab-btn:hover {
   background: #252525;
   color: #fff;
   font-weight: bold;
@@ -557,7 +570,7 @@ body {
 }
 
 .progresso-fill {
-  background: #e50914; /* Ou a cor primária do Eroticpad */
+  background: #e50914; 
   height: 100%;
 }
 
@@ -573,6 +586,7 @@ body {
   font-weight: bold;
   margin-top: 5px;
 }
+
 .btn-action-status {
     background: #1a1a1a;
     color: #ccc;
