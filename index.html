@@ -140,30 +140,16 @@
 
                 <!-- Grupo de Ações da Obra -->
                 <div class="main-actions-group" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; margin-bottom: 25px;">
-                    
                     <!-- Botão Principal -->
                     <button id="btn-start-read" class="btn-vip" style="max-width: 220px; margin: 0;" onclick="iniciarLeituraPrimeiroCap()">
                         📖 Começar a Ler
                     </button>
-
-                    <!-- Botões de Status -->
-                    <div class="actions-bar" style="display: flex; gap: 8px; align-items: center;">
-                        <button id="btn-status-favorito" class="btn-action-status" onclick="alterarStatusBiblioteca('favorito')">
-                            ❤️ Favorito
-                        </button>
-                        <button id="btn-status-para_ler" class="btn-action-status" onclick="alterarStatusBiblioteca('para_ler')">
-                            🔖 Para Ler
-                        </button>
-                        <button id="btn-status-concluido" class="btn-action-status" onclick="alterarStatusBiblioteca('concluido')">
-                            ✅ Concluído
-                        </button>
-                    </div>
-
                 </div>
 
                 <div class="tabs-nav" id="container-tabs-nav">
                     <button id="tab-btn-synopsis" class="tab-btn active" onclick="alternarAbaDetalhes('synopsis')">Resumo</button>
                     <button id="tab-btn-chapters" class="tab-btn" onclick="alternarAbaDetalhes('chapters')">Capítulos</button>
+                    <button id="tab-btn-comments" class="tab-btn" onclick="alternarAbaDetalhes('comments')">💬 Comentários</button>
                 </div>
 
                 <div id="tab-content-synopsis" class="tab-content">
@@ -172,6 +158,10 @@
 
                 <div id="tab-content-chapters" class="tab-content hidden">
                     <div class="chapters-list"></div>
+                </div>
+
+                <div id="tab-content-comments" class="tab-content hidden">
+                    <!-- Renderizado dinamicamente pelo JavaScript -->
                 </div>
             </div>
         </div>
@@ -215,26 +205,28 @@
         </div>
     </section>
 
-    <!-- VISÃO: MINHA BIBLIOTECA -->
-    <section id="view-library" class="view hidden">
-        <div class="container-biblioteca" style="padding: 20px;">
-            <button class="btn-back" onclick="mostrarHome()">← Voltar ao Catálogo</button>
-            <h2 style="margin-top: 15px;">📚 Minha Biblioteca</h2>
+    <!-- VISÃO: CAIXA DE ENTRADA (PAINEL DO AUTOR/ADMIN) -->
+<section id="view-inbox" class="view hidden">
+    <div class="profile-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+        <button class="btn-back" onclick="mostrarHome()" style="margin-bottom: 20px;">← Voltar ao Catálogo</button>
 
-            <!-- Abas de Navegação -->
-            <div class="tabs-biblioteca" style="display: flex; gap: 10px; margin: 20px 0;">
-                <button class="tab-btn active" id="tab-bib-lendo" onclick="filtrarBiblioteca('lendo')">📖 Lendo</button>
-                <button class="tab-btn" id="tab-bib-favorito" onclick="filtrarBiblioteca('favorito')">❤️ Favoritos</button>
-                <button class="tab-btn" id="tab-bib-para_ler" onclick="filtrarBiblioteca('para_ler')">🔖 Para Ler</button>
-                <button class="tab-btn" id="tab-bib-concluido" onclick="filtrarBiblioteca('concluido')">✅ Concluídos</button>
+        <div style="background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem;">
+                <h2 style="color: #fff; font-family: 'Cinzel', serif; font-size: 1.5rem; margin: 0;">📥 Caixa de Entrada - Comentários</h2>
+                <button onclick="carregarCaixaEntradaAdmin()" class="btn-back" style="margin: 0; font-size: 0.85rem; color: #ff3b69;">🔄 Atualizar</button>
             </div>
 
-            <!-- Container dos Cards -->
-            <div id="grid-livros" class="grid-livros">
-                <p style="color: var(--text-secondary);">Carregando sua biblioteca...</p>
+            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Aqui você visualiza todos os comentários recebidos nas suas obras, pode responder aos leitores ou remover comentários inadequados.
+            </p>
+
+            <!-- Lista de Comentários para Moderar/Responder -->
+            <div id="inbox-comments-list" style="display: flex; flex-direction: column; gap: 15px;">
+                <p style="color: #888; text-align: center;">Carregando mensagens...</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- MODAL DE LOGIN, CADASTRO E RECUPERAÇÃO -->
     <div id="modal-auth" class="modal-overlay hidden">
@@ -354,4 +346,4 @@
     <script src="script.js"></script>
 
 </body>
-</html>
+</html> 

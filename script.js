@@ -3,6 +3,9 @@ const SUPABASE_URL = "https://xkggqzzzuvrcpwtrbatm.supabase.co";
 const SUPABASE_KEY = "sb_publishable_TtSVvv-5iVjARmijuAdhzg_8SYxuDnT";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// SEU E-MAIL DE ADMINISTRADOR (Apenas este e-mail/admin vera a Caixa de Entrada)
+const EMAIL_ADMIN = "eduardo.leite.dev@gmail.com"; // <-- Se necessário, ajuste para seu e-mail exato do Supabase
+
 let obraAtualObjeto = null; // Guarda o objeto completo da obra atual
 let historiaAtual = "";
 let todasHistorias = [];
@@ -11,7 +14,6 @@ let perfilLeitor = null;
 let modoAuth = 'login'; // 'login', 'register', 'forgot'
 let planoSelecionado = 'vip30';
 let primeiroCapituloCarregado = null;
-let abaBibliotecaAtual = 'lendo';
 let tipoConteudoAtual = 'livro'; // 'livro' ou 'conto'
 
 // Chave PIX para pagamentos manuais
@@ -122,6 +124,13 @@ async function carregarPerfilLeitor(userId) {
     if (data) {
         perfilLeitor = data;
     }
+}
+
+function checarSeEhAdmin() {
+    if (!leitorAtual) return false;
+    if (leitorAtual.email === EMAIL_ADMIN) return true;
+    if (perfilLeitor && perfilLeitor.eh_admin) return true;
+    return false;
 }
 
 function checarSeEhVip() {
@@ -256,10 +265,7 @@ async function fazerLogoutLeitor(e) {
 
         atualizarNavbarUser();
 
-        const profileView = document.getElementById('view-profile');
-        if (profileView && !profileView.classList.contains('hidden')) {
-            mostrarHome();
-        }
+        mostrarHome();
     } catch (erro) {
         console.error("Erro no logout:", erro);
         alert("Erro ao sair da conta.");
@@ -276,6 +282,7 @@ function atualizarNavbarUser() {
     
     if (leitorAtual) {
         const ehVip = checarSeEhVip();
+        const ehAdmin = checarSeEhAdmin();
         const badgeClass = ehVip ? 'badge-vip' : 'badge-free';
         const badgeText = ehVip ? 'VIP' : 'GRÁTIS';
         
@@ -298,10 +305,12 @@ function atualizarNavbarUser() {
                         <span>Meu Perfil</span>
                         <span class="user-badge ${badgeClass}">${badgeText}</span>
                     </button>
-                    <button class="dropdown-item" onclick="abrirBiblioteca()">
-                        <span>📚</span>
-                        <span>Minha Biblioteca</span>
+                    ${ehAdmin ? `
+                    <button class="dropdown-item" onclick="abrirCaixaEntrada()">
+                        <span>📥</span>
+                        <span>Caixa de Entrada</span>
                     </button>
+                    ` : ''}
                     <div class="dropdown-divider"></div>
                     <button class="dropdown-item" onclick="fazerLogoutLeitor(event)" style="color:#ff3b69;">
                         <span>🚪</span>
@@ -356,24 +365,35 @@ function abrirPerfil() {
         : `<span class="user-badge badge-free">GRÁTIS</span>`;
 
     const subBox = document.getElementById('profile-subscription-box');
+    
     if (ehVip) {
-        let textExpiracao = "Assinatura Ilimitada";
+        let textExpiracao = "Assinatura Vitalícia / Ilimitada";
+        
         if (perfilLeitor && perfilLeitor.subscription_until) {
-            const dataFim = new Date(perfilLeitor.subscription_until).toLocaleDateString('pt-BR');
-            textExpiracao = `Válida até ${dataFim}`;
+            const dataFim = new Date(perfilLeitor.subscription_until);
+            const agora = new Date();
+            const diferencaMs = dataFim.getTime() - agora.getTime();
+            const diasRestantes = Math.ceil(diferencaMs / (1000 * 3600 * 24));
+
+            if (diasRestantes > 0) {
+                const dataFormatada = dataFim.toLocaleDateString('pt-BR');
+                textExpiracao = `⏳ <strong>${diasRestantes} ${diasRestantes === 1 ? 'dia restante' : 'dias restantes'}</strong> de VIP (Válida até ${dataFormatada})`;
+            } else {
+                textExpiracao = "Sua assinatura VIP expira hoje!";
+            }
         }
 
         subBox.className = "subscription-box sub-vip-box";
         subBox.innerHTML = `
             <div>
-                <h4 style="color: #ff3b69; margin: 0 0 6px 0;">Sua Assinatura VIP está Ativa! 🔥</h4>
-                <p style="font-size: 0.9rem; color: #ccc; margin: 0;">${textExpiracao}</p>
+                <h4 style="color: #ff3b69; margin: 0 0 6px 0; font-size: 1.1rem;">Sua Assinatura VIP está Ativa! 🔥</h4>
+                <p style="font-size: 0.95rem; color: #eee; margin: 0;">${textExpiracao}</p>
             </div>
         `;
     } else {
         subBox.className = "subscription-box";
         subBox.innerHTML = `
-            <div class="sub-free-box">
+            <div class="sub-free-box" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div>
                     <h4 style="margin: 0 0 6px 0;">Plano Gratuito</h4>
                     <p style="font-size: 0.85rem; color: #aaa; margin: 0;">Assine o VIP para liberar todos os capítulos e contos imediatamente!</p>
@@ -409,6 +429,138 @@ async function salvarPerfilLeitor(event) {
         await carregarPerfilLeitor(leitorAtual.id);
         atualizarNavbarUser();
         abrirPerfil();
+    }
+}
+
+// -------------------------------------------------------------
+// CAIXA DE ENTRADA (PAINEL DO AUTOR / ADMIN)
+// -------------------------------------------------------------
+
+function abrirCaixaEntrada() {
+    fecharDropdown();
+    
+    if (!checarSeEhAdmin()) {
+        alert("🔒 Acesso restrito ao Autor.");
+        return;
+    }
+
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+    const inboxView = document.getElementById('view-inbox');
+    if (inboxView) inboxView.classList.remove('hidden');
+
+    carregarCaixaEntradaAdmin();
+}
+
+async function carregarCaixaEntradaAdmin() {
+    const listContainer = document.getElementById('inbox-comments-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = "<p style='color: #888; text-align: center;'>Buscando comentários e mensagens...</p>";
+
+    try {
+        const { data: comentarios, error } = await supabaseClient
+            .from('comentarios_obras')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error || !comentarios || comentarios.length === 0) {
+            listContainer.innerHTML = "<p style='color: #888; text-align: center;'>Nenhum comentário recebido ainda.</p>";
+            return;
+        }
+
+        listContainer.innerHTML = "";
+
+        comentarios.forEach(c => {
+            const dataObj = new Date(c.created_at);
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            const card = document.createElement('div');
+            card.style.cssText = "background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 8px;";
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #ff3b69; font-size: 0.95rem;">${c.nome_leitor || 'Leitor Anônimo'}</strong>
+                        <span style="font-size: 0.8rem; color: #888; margin-left: 10px;">em <em style="color: #fff;">${c.historia_titulo}</em></span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #666;">${dataFormatada}</span>
+                </div>
+                <p style="color: #ddd; margin: 4px 0; font-size: 0.95rem; line-height: 1.4; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                    ${c.texto}
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <button onclick="prepararRespostaAdmin(${c.id}, '${c.historia_titulo}', '${c.nome_leitor}')" class="btn-back" style="margin:0; font-size: 0.8rem; padding: 4px 10px; color: #4caf50; border-color: rgba(76,175,80,0.3);">
+                        💬 Responder
+                    </button>
+                    <button onclick="deletarComentarioAdmin(${c.id})" class="btn-back" style="margin:0; font-size: 0.8rem; padding: 4px 10px; color: #ff3b69; border-color: rgba(255,59,105,0.3);">
+                        🗑️ Excluir
+                    </button>
+                </div>
+                <div id="reply-box-${c.id}" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                    <textarea id="reply-input-${c.id}" placeholder="Escreva sua resposta oficial como Autor..." style="width: 100%; height: 60px; background: #222; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 8px; resize: none; font-size: 0.85rem;"></textarea>
+                    <button onclick="enviarRespostaAdmin(${c.id}, '${c.historia_titulo}')" class="btn-vip" style="margin-top: 6px; padding: 6px 12px; font-size: 0.8rem; width: auto;">Enviar Resposta ✨</button>
+                </div>
+            `;
+            listContainer.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error("Erro na caixa de entrada:", err);
+        listContainer.innerHTML = "<p style='color: #ff3b69; text-align: center;'>Erro ao carregar mensagens.</p>";
+    }
+}
+
+function prepararRespostaAdmin(id, historia, leitor) {
+    const replyBox = document.getElementById(`reply-box-${id}`);
+    if (replyBox) replyBox.classList.toggle('hidden');
+}
+
+async function enviarRespostaAdmin(parentId, historiaTitulo) {
+    const input = document.getElementById(`reply-input-${parentId}`);
+    const texto = input ? input.value.trim() : "";
+
+    if (!texto) {
+        alert("Escreva uma resposta antes de enviar!");
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from('comentarios_obras')
+            .insert([{
+                user_id: leitorAtual.id,
+                historia_titulo: historiaTitulo,
+                nome_leitor: "👑 Autor",
+                texto: texto,
+                parent_id: parentId
+            }]);
+
+        if (error) throw error;
+
+        alert("✨ Resposta enviada com sucesso!");
+        carregarCaixaEntradaAdmin();
+
+    } catch (err) {
+        alert("Erro ao enviar resposta: " + err.message);
+    }
+}
+
+async function deletarComentarioAdmin(id) {
+    if (!confirm("Tem certeza que deseja excluir este comentário permanentemente?")) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('comentarios_obras')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        alert("🗑️ Comentário excluído com sucesso!");
+        carregarCaixaEntradaAdmin();
+
+    } catch (err) {
+        alert("Erro ao excluir comentário: " + err.message);
     }
 }
 
@@ -463,8 +615,6 @@ function mostrarHome() {
 function abrirHistoria(historia) {
     obraAtualObjeto = historia;
     historiaAtual = historia.titulo;
-    
-    verificarStatusAtualBiblioteca(historia.titulo);
 
     const capaImg = historia.capa_url || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80';
     document.getElementById('detail-cover').src = capaImg;
@@ -479,6 +629,8 @@ function abrirHistoria(historia) {
         if (navTabs) navTabs.classList.add('hidden');
         document.getElementById('tab-content-synopsis').classList.remove('hidden');
         document.getElementById('tab-content-chapters').classList.add('hidden');
+        const contentComments = document.getElementById('tab-content-comments');
+        if (contentComments) contentComments.classList.add('hidden');
     } else {
         if (navTabs) navTabs.classList.remove('hidden');
         alternarAbaDetalhes('synopsis');
@@ -492,19 +644,32 @@ function abrirHistoria(historia) {
 function alternarAbaDetalhes(aba) {
     const btnSyn = document.getElementById('tab-btn-synopsis');
     const btnCap = document.getElementById('tab-btn-chapters');
+    const btnCom = document.getElementById('tab-btn-comments');
+    
     const contentSyn = document.getElementById('tab-content-synopsis');
     const contentCap = document.getElementById('tab-content-chapters');
+    const contentCom = document.getElementById('tab-content-comments');
+
+    if (btnSyn) btnSyn.classList.remove('active');
+    if (btnCap) btnCap.classList.remove('active');
+    if (btnCom) btnCom.classList.remove('active');
+
+    if (contentSyn) contentSyn.classList.add('hidden');
+    if (contentCap) contentCap.classList.add('hidden');
+    if (contentCom) contentCom.classList.add('hidden');
 
     if (aba === 'synopsis') {
-        btnSyn.classList.add('active');
-        btnCap.classList.remove('active');
-        contentSyn.classList.remove('hidden');
-        contentCap.classList.add('hidden');
-    } else {
-        btnCap.classList.add('active');
-        btnSyn.classList.remove('active');
-        contentCap.classList.remove('hidden');
-        contentSyn.classList.add('hidden');
+        if (btnSyn) btnSyn.classList.add('active');
+        if (contentSyn) contentSyn.classList.remove('hidden');
+    } else if (aba === 'chapters') {
+        if (btnCap) btnCap.classList.add('active');
+        if (contentCap) contentCap.classList.remove('hidden');
+    } else if (aba === 'comments') {
+        if (btnCom) btnCom.classList.add('active');
+        if (contentCom) {
+            contentCom.classList.remove('hidden');
+            carregarComentariosObra(historiaAtual);
+        }
     }
 }
 
@@ -513,7 +678,6 @@ function voltarParaDetalhes() {
     document.getElementById('view-details').classList.remove('hidden');
 }
 
-// BLOQUEIO DA ABA CONTOS PARA NÃO-VIP
 function alternarTipoConteudo(tipo) {
     if (tipo === 'conto') {
         const ehVipOuAdmin = checarSeEhVip();
@@ -611,6 +775,7 @@ function filtrarCategoria(categoria) {
 
 async function carregarCapitulosDaHistoria(tituloHistoria) {
     const listaContainer = document.querySelector('.chapters-list');
+    if (!listaContainer) return;
     listaContainer.innerHTML = "<p style='color: var(--text-secondary);'>Carregando capítulos...</p>";
 
     const { data: capitulos, error } = await supabaseClient
@@ -663,7 +828,6 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
     });
 }
 
-// INICIAR LEITURA TRATANDO LIVRO OU CONTO
 function iniciarLeituraPrimeiroCap() {
     if (obraAtualObjeto && obraAtualObjeto.tipo === 'conto') {
         abrirLeitorConto(obraAtualObjeto);
@@ -677,7 +841,6 @@ function iniciarLeituraPrimeiroCap() {
     }
 }
 
-// EXIBIÇÃO DO CONTO COMPLETO COM PROTEÇÃO VIP
 function abrirLeitorConto(conto) {
     const ehVip = checarSeEhVip();
 
@@ -706,7 +869,6 @@ function abrirLeitorConto(conto) {
         } else {
             textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
             if (paywallElem) paywallElem.classList.add('hidden');
-            salvarProgressoBiblioteca(conto.titulo, 1);
         }
     }
 
@@ -756,8 +918,6 @@ function abrirLeitorCapitulo(capitulo) {
         } else {
             textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
             if (paywallElem) paywallElem.classList.add('hidden');
-            
-            salvarProgressoBiblioteca(capitulo.historia_titulo, capitulo.capitulo_numero);
         }
     }
 
@@ -765,230 +925,123 @@ function abrirLeitorCapitulo(capitulo) {
 }
 
 // -------------------------------------------------------------
-// NAVEGAÇÃO DA BIBLIOTECA
+// SISTEMA DE COMENTÁRIOS DOS LEITORES (COM EMOTICONS)
 // -------------------------------------------------------------
 
-function abrirBiblioteca() {
-    fecharDropdown();
-    
-    if (!leitorAtual) {
-        alert("🔒 Faça login para acessar sua biblioteca!");
-        abrirModalAuth();
-        return;
-    }
-
-    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-
-    const libraryView = document.getElementById('view-library');
-    if (libraryView) {
-        libraryView.classList.remove('hidden');
-        carregarBiblioteca(abaBibliotecaAtual);
-    } else {
-        alert("⚠️ Erro: Não foi encontrada a tag <section id='view-library'> no seu index.html!");
+function inserirEmoji(emoji) {
+    const input = document.getElementById('input-novo-comentario');
+    if (input) {
+        input.value += emoji;
+        input.focus();
     }
 }
 
-function filtrarBiblioteca(status) {
-    abaBibliotecaAtual = status;
+async function carregarComentariosObra(tituloHistoria) {
+    const container = document.getElementById('tab-content-comments');
+    if (!container) return;
 
-    document.querySelectorAll('.tabs-biblioteca .tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    const btnAtivo = document.getElementById(`tab-bib-${status}`);
-    if (btnAtivo) btnAtivo.classList.add('active');
-
-    carregarBiblioteca(status);
-}
-
-async function carregarBiblioteca(status) {
-    const grid = document.getElementById('grid-livros');
-    if (!grid) return;
-
-    if (!leitorAtual) {
-        grid.innerHTML = "<p style='color: var(--text-secondary);'>Faça login para ver seus livros.</p>";
-        return;
-    }
-
-    grid.innerHTML = "<p style='color: var(--text-secondary);'>Carregando livros...</p>";
-
-    const { data: itens, error } = await supabaseClient
-        .from('biblioteca_leitor')
-        .select('*')
-        .eq('user_id', leitorAtual.id)
-        .eq('status', status);
-
-    if (error || !itens || itens.length === 0) {
-        grid.innerHTML = `<p style='color: var(--text-secondary);'>Nenhum livro em "${status.replace('_', ' ')}".</p>`;
-        return;
-    }
-
-    grid.innerHTML = "";
-
-    for (const item of itens) {
-        const historia = (typeof todasHistorias !== 'undefined') 
-            ? todasHistorias.find(h => h.titulo === item.historia_titulo) 
-            : null;
-
-        const capa = item.capa_url || historia?.capa_url || 'https://via.placeholder.com/200x260?text=Sem+Capa';
-        const autor = item.autor || historia?.autor || 'Autor desconhecido';
-        const numCap = item.ultimo_capitulo_numero || item.capitulo_numero || 1;
-
-        const card = document.createElement('div');
-        card.className = 'card-livro';
-
-        card.innerHTML = `
-            <img src="${capa}" alt="${item.historia_titulo}">
-            <h3>${item.historia_titulo}</h3>
-            <p>Por ${autor}</p>
-            <p style="color: var(--accent-red); font-weight: 600; margin-top: 4px;">Parado no Cap. ${numCap}</p>
+    container.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #fff; margin-bottom: 10px;">💬 O que os leitores estão achando</h3>
             
-            <div class="barra-progresso">
-                <div class="progresso-fill" style="width: ${item.progresso_porcentagem || 0}%;"></div>
+            <!-- Barra de Emoticons Rápidos -->
+            <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                <button onclick="inserirEmoji('🔥')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">🔥</button>
+                <button onclick="inserirEmoji('❤️')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">❤️</button>
+                <button onclick="inserirEmoji('😈')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">😈</button>
+                <button onclick="inserirEmoji('💦')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">💦</button>
+                <button onclick="inserirEmoji('👀')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">👀</button>
+                <button onclick="inserirEmoji('😱')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">😱</button>
+                <button onclick="inserirEmoji('👏')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">👏</button>
             </div>
 
-            <button class="btn-continuar" onclick="continuarLeituraBiblioteca('${item.historia_titulo}', ${numCap})">
-                📖 Continuar Lendo
-            </button>
-        `;
-
-        grid.appendChild(card);
-    }
-}
-
-async function salvarProgressoBiblioteca(tituloHistoria, numCapitulo) {
-    if (!leitorAtual) return;
+            <textarea id="input-novo-comentario" placeholder="Escreva seu comentário sobre esta obra..." style="width: 100%; height: 80px; background: #1a1a1e; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; resize: none;"></textarea>
+            <button onclick="enviarComentarioObra()" class="btn-vip" style="margin-top: 10px; padding: 8px 16px; font-size: 0.9rem;">Enviar Comentário 🚀</button>
+        </div>
+        <div id="lista-comentarios-container">
+            <p style="color: var(--text-secondary);">Carregando comentários...</p>
+        </div>
+    `;
 
     try {
-        const { data: existente } = await supabaseClient
-            .from('biblioteca_leitor')
+        const { data, error } = await supabaseClient
+            .from('comentarios_obras')
             .select('*')
-            .eq('user_id', leitorAtual.id)
             .eq('historia_titulo', tituloHistoria)
-            .maybeSingle();
+            .order('created_at', { ascending: false });
 
-        if (existente) {
-            await supabaseClient
-                .from('biblioteca_leitor')
-                .update({
-                    ultimo_capitulo_numero: numCapitulo,
-                    updated_at: new Date()
-                })
-                .eq('id', existente.id);
-        } else {
-            await supabaseClient
-                .from('biblioteca_leitor')
-                .insert([{
-                    user_id: leitorAtual.id,
-                    historia_titulo: tituloHistoria,
-                    ultimo_capitulo_numero: numCapitulo,
-                    status: 'lendo'
-                }]);
+        const listaDiv = document.getElementById('lista-comentarios-container');
+        if (!listaDiv) return;
+
+        if (error || !data || data.length === 0) {
+            listaDiv.innerHTML = "<p style='color: var(--text-secondary);'>Nenhum comentário ainda. Seja o primeiro a comentar!</p>";
+            return;
         }
-    } catch (e) {
-        console.warn("Aviso ao salvar progresso na biblioteca:", e);
+
+        listaDiv.innerHTML = data.map(c => {
+            const ehAutor = c.nome_leitor && c.nome_leitor.includes('Autor');
+            const estiloCard = ehAutor 
+                ? "background: rgba(255, 59, 105, 0.08); border: 1px solid rgba(255, 59, 105, 0.3);" 
+                : "background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);";
+
+            return `
+                <div style="${estiloCard} border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                    <strong style="color: ${ehAutor ? '#ff3b69' : '#e0e0e0'}; font-size: 0.9rem;">
+                        ${c.nome_leitor || 'Leitor Anônimo'}
+                    </strong>
+                    <p style="color: #ddd; margin: 6px 0 0 0; font-size: 0.95rem; line-height: 1.4;">${c.texto}</p>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Erro ao buscar comentários:", err);
     }
 }
 
-async function continuarLeituraBiblioteca(tituloHistoria, numCapitulo) {
-    const { data: obra } = await supabaseClient
-        .from('historias')
-        .select('*')
-        .eq('titulo', tituloHistoria)
-        .maybeSingle();
-
-    if (obra && obra.tipo === 'conto') {
-        abrirLeitorConto(obra);
-        return;
-    }
-
-    const { data: cap } = await supabaseClient
-        .from('capitulos')
-        .select('*')
-        .eq('historia_titulo', tituloHistoria)
-        .eq('capitulo_numero', numCapitulo)
-        .maybeSingle();
-
-    if (cap) {
-        abrirLeitorCapitulo(cap);
-    } else {
-        alert("Não foi possível carregar este capítulo.");
-    }
-}
-
-async function verificarStatusAtualBiblioteca(tituloHistoria) {
-    document.querySelectorAll('.btn-action-status').forEach(btn => btn.classList.remove('active-status'));
-
-    if (!leitorAtual) return;
-
-    const { data: item } = await supabaseClient
-        .from('biblioteca_leitor')
-        .select('status')
-        .eq('user_id', leitorAtual.id)
-        .eq('historia_titulo', historiaAtual)
-        .maybeSingle();
-
-    if (item && item.status) {
-        const btnAtivo = document.getElementById(`btn-status-${item.status}`);
-        if (btnAtivo) btnAtivo.classList.add('active-status');
-    }
-}
-
-async function alterarStatusBiblioteca(novoStatus) {
+async function enviarComentarioObra() {
     if (!leitorAtual) {
-        alert("🔒 Faça login para salvar livros na sua biblioteca!");
+        alert("🔒 Faça login para poder comentar!");
         abrirModalAuth();
         return;
     }
 
-    if (!historiaAtual) return;
+    const input = document.getElementById('input-novo-comentario');
+    const texto = input ? input.value.trim() : "";
 
-    const btnAlvo = document.getElementById(`btn-status-${novoStatus}`);
-    const jaEstavaAtivo = btnAlvo?.classList.contains('active-status');
+    if (!texto) {
+        alert("Escreva alguma coisa antes de enviar!");
+        return;
+    }
+
+    let nomeLeitor = (perfilLeitor && perfilLeitor.nome) ? perfilLeitor.nome : leitorAtual.email.split('@')[0];
+    if (checarSeEhAdmin()) {
+        nomeLeitor = "👑 Autor (" + nomeLeitor + ")";
+    }
 
     try {
-        if (jaEstavaAtivo) {
-            await supabaseClient
-                .from('biblioteca_leitor')
-                .delete()
-                .eq('user_id', leitorAtual.id)
-                .eq('historia_titulo', historiaAtual);
+        const { error } = await supabaseClient
+            .from('comentarios_obras')
+            .insert([{
+                user_id: leitorAtual.id,
+                historia_titulo: historiaAtual,
+                nome_leitor: nomeLeitor,
+                texto: texto
+            }]);
 
-            btnAlvo.classList.remove('active-status');
-        } else {
-            const { data: existente } = await supabaseClient
-                .from('biblioteca_leitor')
-                .select('*')
-                .eq('user_id', leitorAtual.id)
-                .eq('historia_titulo', historiaAtual)
-                .maybeSingle();
+        if (error) throw error;
 
-            if (existente) {
-                await supabaseClient
-                    .from('biblioteca_leitor')
-                    .update({ status: novoStatus, updated_at: new Date() })
-                    .eq('id', existente.id);
-            } else {
-                await supabaseClient
-                    .from('biblioteca_leitor')
-                    .insert([{
-                        user_id: leitorAtual.id,
-                        historia_titulo: historiaAtual,
-                        ultimo_capitulo_numero: 1,
-                        status: novoStatus
-                    }]);
-            }
+        input.value = "";
+        alert("✨ Comentário enviado com sucesso!");
+        carregarComentariosObra(historiaAtual);
 
-            document.querySelectorAll('.btn-action-status').forEach(btn => btn.classList.remove('active-status'));
-            if (btnAlvo) btnAtivo.classList.add('active-status');
-        }
     } catch (err) {
-        console.error("Erro ao alterar status:", err);
+        alert("Erro ao enviar comentário: " + err.message);
     }
 }
 
 // -------------------------------------------------------------
-// GERENCIAMENTO DE LEITORES (EXCLUSIVO PARA O ADMIN.HTML)
+// GERENCIAMENTO DE LEITORES (ADMIN.HTML)
 // -------------------------------------------------------------
 
 async function carregarLeitoresParaGerenciar() {
