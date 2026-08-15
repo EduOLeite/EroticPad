@@ -11,7 +11,11 @@
     --font-ui: 'Inter', sans-serif;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
 
 body {
     background-color: var(--bg-main);
@@ -21,7 +25,9 @@ body {
 }
 
 /* Utilities */
-.hidden { display: none !important; }
+.hidden { 
+    display: none !important; 
+}
 
 /* Navbar */
 .navbar {
@@ -51,7 +57,9 @@ body {
     white-space: nowrap;
 }
 
-.logo span { color: var(--accent-red); }
+.logo span { 
+    color: var(--accent-red); 
+}
 
 /* DROPDOWN DE EXPLORAR GÊNEROS (NO TOPO) */
 .explore-dropdown-container {
@@ -160,8 +168,12 @@ body {
 
 .btn-vip-nav {
     background: linear-gradient(135deg, var(--accent-wine), var(--accent-red));
-    color: #fff; border: none; padding: 0.5rem 1rem;
-    border-radius: 20px; font-weight: 600; cursor: pointer;
+    color: #fff; 
+    border: none; 
+    padding: 0.5rem 1rem;
+    border-radius: 20px; 
+    font-weight: 600; 
+    cursor: pointer;
     white-space: nowrap;
 }
 
@@ -240,7 +252,9 @@ body {
     font-size: 0.75rem;
 }
 
-.card-info { padding: 1rem; }
+.card-info { 
+    padding: 1rem; 
+}
 
 .card-info h3 {
     font-family: var(--font-title);
@@ -261,7 +275,10 @@ body {
     color: var(--text-secondary);
 }
 
-.free-badge { color: #4caf50; font-weight: 600; }
+.free-badge { 
+    color: #4caf50; 
+    font-weight: 600; 
+}
 
 /* Botão Voltar */
 .btn-back {
@@ -275,7 +292,9 @@ body {
     transition: opacity 0.2s;
 }
 
-.btn-back:hover { opacity: 0.8; }
+.btn-back:hover { 
+    opacity: 0.8; 
+}
 
 /* Layout da Tela de Detalhes Estilo Wattpad */
 .story-detail-container {
@@ -338,7 +357,9 @@ body {
     position: relative;
 }
 
-.tab-btn.active { color: var(--accent-red); }
+.tab-btn.active { 
+    color: var(--accent-red); 
+}
 
 .tab-btn.active::after {
     content: '';
@@ -360,9 +381,16 @@ body {
 }
 
 /* Lista de Capítulos */
-.chapters-title { margin: 1.5rem 0 1rem; font-family: var(--font-title); }
+.chapters-title { 
+    margin: 1.5rem 0 1rem; 
+    font-family: var(--font-title); 
+}
 
-.chapters-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.chapters-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.75rem; 
+}
 
 .chapter-item {
     background: var(--bg-card);
@@ -375,10 +403,21 @@ body {
     border: 1px solid rgba(255,255,255,0.05);
 }
 
-.chapter-item.locked { opacity: 0.85; }
+.chapter-item.locked { 
+    opacity: 0.85; 
+}
 
-.status.free { color: #4caf50; font-size: 0.8rem; font-weight: 600; }
-.status.vip { color: var(--accent-red); font-size: 0.8rem; font-weight: 600; }
+.status.free { 
+    color: #4caf50; 
+    font-size: 0.8rem; 
+    font-weight: 600; 
+}
+
+.status.vip { 
+    color: var(--accent-red); 
+    font-size: 0.8rem; 
+    font-weight: 600; 
+}
 
 /* Leitor */
 .reader-content {
@@ -405,9 +444,14 @@ body {
 /* Card Paywall */
 .btn-vip {
     background: linear-gradient(135deg, var(--accent-gold), #e85d04);
-    color: #000; border: none; padding: 0.9rem 1.8rem;
-    border-radius: 25px; font-weight: 700; cursor: pointer;
-    width: 100%; margin-top: 1rem;
+    color: #000; 
+    border: none; 
+    padding: 0.9rem 1.8rem;
+    border-radius: 25px; 
+    font-weight: 700; 
+    cursor: pointer;
+    width: 100%; 
+    margin-top: 1rem;
 }
 
 /* Tela Meu Perfil */
@@ -481,6 +525,75 @@ body {
 
 .margin-top-sm {
     margin-top: 8px;
+}
+
+/* ==========================================================================
+   ESTILIZAÇÃO GLOBAL DE FORMULÁRIOS, MODAIS E INPUTS (FIX DARK THEME)
+   ========================================================================== */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 1.2rem;
+    width: 100%;
+}
+
+label {
+    display: block;
+    color: #c0c0d0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+    background-color: #12121a !important;
+    border: 1px solid #2a2a38 !important;
+    border-radius: 8px !important;
+    padding: 12px 14px !important;
+    color: #ffffff !important;
+    font-size: 0.95rem !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Efeito ao focar no campo */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent-red) !important;
+    box-shadow: 0 0 0 3px rgba(201, 24, 74, 0.25) !important;
+}
+
+/* Ajustes de Modais de Autenticação */
+.auth-modal,
+.modal-content,
+#modal-auth {
+    background: #18131d;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+.auth-modal input,
+.modal input,
+#modal-auth input {
+    margin-left: 0 !important;
 }
 
 /* Mobile Responsivo */
