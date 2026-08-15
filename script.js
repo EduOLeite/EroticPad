@@ -4,7 +4,7 @@ const SUPABASE_KEY = "sb_publishable_TtSVvv-5iVjARmijuAdhzg_8SYxuDnT";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // SEU E-MAIL DE ADMINISTRADOR (Apenas este e-mail/admin vera a Caixa de Entrada)
-const EMAIL_ADMIN = "eduardo.leite.dev@gmail.com"; // <-- Se necessário, ajuste para seu e-mail exato do Supabase
+const EMAIL_ADMIN = "eduardo.leite.dev@gmail.com";
 
 let obraAtualObjeto = null; // Guarda o objeto completo da obra atual
 let historiaAtual = "";
@@ -15,6 +15,7 @@ let modoAuth = 'login'; // 'login', 'register', 'forgot'
 let planoSelecionado = 'vip30';
 let primeiroCapituloCarregado = null;
 let tipoConteudoAtual = 'livro'; // 'livro' ou 'conto'
+let generoSelecionadoAtual = 'Todos';
 
 // Chave PIX para pagamentos manuais
 const MINHA_CHAVE_PIX = "69992752883";
@@ -46,13 +47,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         await verificarSessaoLeitor();
     }
 
+    // Fechar dropdowns ao clicar fora
     document.addEventListener('click', (e) => {
-        const container = document.getElementById('dropdown-container');
-        if (container && !container.contains(e.target)) {
+        const containerUser = document.getElementById('dropdown-container');
+        if (containerUser && !containerUser.contains(e.target)) {
             fecharDropdown();
+        }
+
+        const containerExplore = document.getElementById('explore-dropdown-container');
+        if (containerExplore && !containerExplore.contains(e.target)) {
+            fecharExploreMenu();
         }
     });
 });
+
+function toggleExploreMenu(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('explore-menu');
+    if (menu) menu.classList.toggle('hidden');
+}
+
+function fecharExploreMenu() {
+    const menu = document.getElementById('explore-menu');
+    if (menu && !menu.classList.contains('hidden')) menu.classList.add('hidden');
+}
+
+function selecionarGeneroTopo(elem, genero) {
+    generoSelecionadoAtual = genero;
+    fecharExploreMenu();
+
+    document.querySelectorAll('.explore-genre-item').forEach(li => li.classList.remove('active'));
+    if (elem) elem.classList.add('active');
+
+    const badge = document.getElementById('active-filter-badge');
+    const badgeName = document.getElementById('active-filter-name');
+
+    if (genero === 'Todos') {
+        if (badge) badge.classList.add('hidden');
+        renderizarCardsHistorias(todasHistorias);
+    } else {
+        if (badge) badge.classList.remove('hidden');
+        if (badgeName) badgeName.innerText = genero;
+        
+        const filtradas = todasHistorias.filter(h => h.categoria === genero);
+        renderizarCardsHistorias(filtradas);
+    }
+}
+
+function limparFiltroGenero() {
+    selecionarGeneroTopo(null, 'Todos');
+}
 
 function abrirModalResetSenha() {
     const modalReset = document.getElementById('modal-reset-password');
@@ -719,12 +763,23 @@ async function carregarHistorias() {
     }
 
     todasHistorias = data;
-    renderizarCardsHistorias(todasHistorias);
+
+    if (generoSelecionadoAtual !== 'Todos') {
+        const filtradas = todasHistorias.filter(h => h.categoria === generoSelecionadoAtual);
+        renderizarCardsHistorias(filtradas);
+    } else {
+        renderizarCardsHistorias(todasHistorias);
+    }
 }
 
 function renderizarCardsHistorias(lista) {
     const container = document.getElementById('stories-container');
     container.innerHTML = "";
+
+    if (lista.length === 0) {
+        container.innerHTML = "<p style='color: var(--text-secondary);'>Nenhuma obra encontrada para esta categoria.</p>";
+        return;
+    }
 
     lista.forEach(historia => {
         const capaImg = historia.capa_url || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80';
@@ -754,23 +809,6 @@ function renderizarCardsHistorias(lista) {
         `;
         container.appendChild(card);
     });
-}
-
-function filtrarCategoria(categoria) {
-    document.querySelectorAll('.categories-bar .chip').forEach(btn => {
-        if (btn.innerText.trim() === categoria) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-
-    if (categoria === 'Todos') {
-        renderizarCardsHistorias(todasHistorias);
-    } else {
-        const filtradas = todasHistorias.filter(h => h.categoria === categoria);
-        renderizarCardsHistorias(filtradas);
-    }
 }
 
 async function carregarCapitulosDaHistoria(tituloHistoria) {

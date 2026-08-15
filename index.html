@@ -89,7 +89,31 @@
 
     <!-- Header / Navbar -->
     <header class="navbar">
-        <div class="logo" onclick="mostrarHome()" style="cursor: pointer;">Erotic<span>Pad</span></div>
+        <div class="logo-group">
+            <div class="logo" onclick="mostrarHome()" style="cursor: pointer;">Erotic<span>Pad</span></div>
+
+            <!-- MEGA MENU / DROPDOWN DE EXPLORAR GÊNEROS -->
+            <div class="explore-dropdown-container" id="explore-dropdown-container">
+                <button class="explore-btn" onclick="toggleExploreMenu(event)">
+                    <span>Explorar</span>
+                    <span class="arrow">▾</span>
+                </button>
+                
+                <div id="explore-menu" class="explore-menu hidden">
+                    <div class="explore-menu-title">Gêneros Literários</div>
+                    <ul class="explore-genre-list">
+                        <li class="explore-genre-item active" onclick="selecionarGeneroTopo(this, 'Todos')">✨ Todos os Gêneros</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'Aventura & Arqueologia')">🤠 Aventura & Arqueologia</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'Fantasia')">🗡️ Fantasia</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'Suspense & Mistério')">🕵️‍♂️ Suspense & Mistério</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'Romance Futurista')">🚀 Romance Futurista</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'Terror & Sobrenatural')">🩸 Terror & Sobrenatural</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'Amores & Pecados')">🔥 Amores & Pecados</li>
+                        <li class="explore-genre-item" onclick="selecionarGeneroTopo(this, 'CEO & Submissão')">💼 CEO & Submissão</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
         
         <div class="nav-tabs">
             <button id="btn-livros" class="tab-btn active" onclick="alternarTipoConteudo('livro')">
@@ -100,28 +124,26 @@
             </button>
         </div>
 
-        <div id="nav-user-area" style="display: flex; align-items: center; gap: 12px;">
+        <div id="nav-user-area">
             <!-- Renderizado dinamicamente via JS -->
         </div>
     </header>
 
     <!-- Visão 1: Catálogo (Home) -->
-    <section id="view-home" class="view">
-        <div class="categories-bar">
-            <button class="chip active" onclick="filtrarCategoria('Todos')">Todos</button>
-            <button class="chip" onclick="filtrarCategoria('Aventura & Arqueológica')">Aventura & Arqueológica</button>
-            <button class="chip" onclick="filtrarCategoria('Fantasia')">Fantasia</button>
-            <button class="chip" onclick="filtrarCategoria('Suspense & Mistério')">Suspense & Mistério</button>
-            <button class="chip" onclick="filtrarCategoria('Romance Futurista')">Romance Futurista</button>
-            <button class="chip" onclick="filtrarCategoria('Terror & Sobrenatural')">Terror & Sobrenatural</button>
-            <button class="chip" onclick="filtrarCategoria('Amores & Pecados')">Amores & Pecados</button>
-            <button class="chip" onclick="filtrarCategoria('CEO & Submissão')">CEO & Submissão</button>
-        </div>
-
-        <h2 class="section-title">Em Destaque</h2>
-        <div class="stories-grid" id="stories-container">
-            <p style="color: var(--text-secondary);">Carregando catálogo...</p>
-        </div>
+    <section id="view-home" class="view main-layout">
+        <main class="main-content">
+            <div class="catalog-header-info">
+                <h2 class="section-title" id="section-catalog-title">Em Destaque</h2>
+                <span id="active-filter-badge" class="active-filter-tag hidden">
+                    Filtro: <strong id="active-filter-name">Todos</strong> 
+                    <span onclick="limparFiltroGenero()" style="cursor:pointer; margin-left:5px;">✕</span>
+                </span>
+            </div>
+            
+            <div class="stories-grid" id="stories-container">
+                <p style="color: var(--text-secondary);">Carregando catálogo...</p>
+            </div>
+        </main>
     </section>
 
     <!-- Visão 2: Detalhes do Livro ou Conto -->
@@ -206,27 +228,27 @@
     </section>
 
     <!-- VISÃO: CAIXA DE ENTRADA (PAINEL DO AUTOR/ADMIN) -->
-<section id="view-inbox" class="view hidden">
-    <div class="profile-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
-        <button class="btn-back" onclick="mostrarHome()" style="margin-bottom: 20px;">← Voltar ao Catálogo</button>
+    <section id="view-inbox" class="view hidden">
+        <div class="profile-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+            <button class="btn-back" onclick="mostrarHome()" style="margin-bottom: 20px;">← Voltar ao Catálogo</button>
 
-        <div style="background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem;">
-                <h2 style="color: #fff; font-family: 'Cinzel', serif; font-size: 1.5rem; margin: 0;">📥 Caixa de Entrada - Comentários</h2>
-                <button onclick="carregarCaixaEntradaAdmin()" class="btn-back" style="margin: 0; font-size: 0.85rem; color: #ff3b69;">🔄 Atualizar</button>
-            </div>
+            <div style="background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem;">
+                    <h2 style="color: #fff; font-family: 'Cinzel', serif; font-size: 1.5rem; margin: 0;">📥 Caixa de Entrada - Comentários</h2>
+                    <button onclick="carregarCaixaEntradaAdmin()" class="btn-back" style="margin: 0; font-size: 0.85rem; color: #ff3b69;">🔄 Atualizar</button>
+                </div>
 
-            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 1.5rem;">
-                Aqui você visualiza todos os comentários recebidos nas suas obras, pode responder aos leitores ou remover comentários inadequados.
-            </p>
+                <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Aqui você visualiza todos os comentários recebidos nas suas obras, pode responder aos leitores ou remover comentários inadequados.
+                </p>
 
-            <!-- Lista de Comentários para Moderar/Responder -->
-            <div id="inbox-comments-list" style="display: flex; flex-direction: column; gap: 15px;">
-                <p style="color: #888; text-align: center;">Carregando mensagens...</p>
+                <!-- Lista de Comentários para Moderar/Responder -->
+                <div id="inbox-comments-list" style="display: flex; flex-direction: column; gap: 15px;">
+                    <p style="color: #888; text-align: center;">Carregando mensagens...</p>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <!-- MODAL DE LOGIN, CADASTRO E RECUPERAÇÃO -->
     <div id="modal-auth" class="modal-overlay hidden">
@@ -346,4 +368,4 @@
     <script src="script.js"></script>
 
 </body>
-</html> 
+</html>
