@@ -636,37 +636,49 @@ textarea:focus {
 @media (max-width: 768px) {
     .navbar {
         padding: 12px 16px;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
     }
 
-    /* Topo: Logo na esquerda */
+    /* Linha 1: Topo com Logo e Perfil alinhados */
     .logo-group {
-        width: auto;
-        gap: 10px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    .logo {
-        font-size: 1.2rem;
+    /* Reduz um pouco a logo no mobile para dar respiro */
+    .logo-text {
+        font-size: 1.2rem !important;
     }
 
-    /* Topo: Usuário / Botão de Login fixado no canto direito superior */
+    /* Força o botão do Eduardo a ir para a direita no topo */
     #nav-user-area {
-        order: 2;
-        margin-left: auto;
-        gap: 8px;
+        position: absolute;
+        top: 12px;
+        right: 16px;
     }
 
-    /* Segunda Linha: Botão Explorar + Navegação Livros/Contos organizados */
+    /* Linha 2: Barra de navegação inferior completa */
+    .nav-tabs {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 6px;
+        border-radius: 25px;
+    }
+
     .explore-dropdown-container {
-        order: 3;
+        width: 100%;
     }
 
     .explore-btn {
-        padding: 6px 12px;
-        font-size: 0.8rem;
+        width: 100%;
+        justify-content: center;
     }
 
     .nav-tabs {
