@@ -29,24 +29,27 @@ body {
     display: none !important; 
 }
 
-/* Navbar */
+/* ==========================================================================
+   NAVBAR & ESTRUTURA DE NAVEGAÇÃO
+   ========================================================================== */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 40px;
-  background-color: #0f0f0f;
-  gap: 15px;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 40px;
+    background-color: #0f0f0f;
+    gap: 20px;
+    position: relative;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Grupo Esquerdo: Logo + Explorar + Abas (Livros & Contos) */
 .logo-group {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
+    flex-wrap: wrap;
 }
 
 .logo {
@@ -55,10 +58,27 @@ body {
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
 }
 
 .logo span { 
     color: var(--accent-red); 
+}
+
+.logo-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+.logo-highlight {
+    color: #ff3b69;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    margin-left: 2px;
 }
 
 /* DROPDOWN DE EXPLORAR GÊNEROS (NO TOPO) */
@@ -138,32 +158,44 @@ body {
     background: rgba(255, 59, 105, 0.15);
 }
 
-/* Tabs e Área do Usuário */
+/* Tabs Navegação (Livros / Contos) */
 .nav-tabs {
-  display: flex;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 3px;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  align-items: center;
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    align-items: center;
 }
 
 .nav-tabs .tab-btn,
 .nav-tabs button {
-  border-radius: 20px;
-  border: none;
-  padding: 6px 14px;
-  font-size: 0.9rem;
+    border-radius: 20px;
+    border: none;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
 }
 
+.nav-tabs .tab-btn.active,
+.nav-tabs button.active {
+    background: rgba(255, 59, 105, 0.2);
+    color: #ff3b69;
+    font-weight: 600;
+}
+
+/* Área do Usuário (Extremo Direito) */
 #nav-user-area {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    white-space: nowrap;
 }
 
 .btn-vip-nav {
@@ -177,7 +209,9 @@ body {
     white-space: nowrap;
 }
 
-/* Visão Container */
+/* ==========================================================================
+   LAYOUTS E CONTEÚDO PRINCIPAL
+   ========================================================================== */
 .view {
     max-width: 1100px;
     margin: 0 auto;
@@ -338,7 +372,7 @@ body {
     font-size: 1rem;
 }
 
-/* Abas */
+/* Abas INTERNAS */
 .tabs-nav {
     display: flex;
     gap: 1.5rem;
@@ -346,7 +380,7 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.tab-btn {
+.tabs-nav .tab-btn {
     background: none;
     border: none;
     color: var(--text-secondary);
@@ -357,11 +391,11 @@ body {
     position: relative;
 }
 
-.tab-btn.active { 
+.tabs-nav .tab-btn.active { 
     color: var(--accent-red); 
 }
 
-.tab-btn.active::after {
+.tabs-nav .tab-btn.active::after {
     content: '';
     position: absolute;
     bottom: -1px;
@@ -596,14 +630,21 @@ textarea:focus {
     margin-left: 0 !important;
 }
 
-/* Mobile Responsivo */
+/* ==========================================================================
+   RESPONSIVIDADE AJUSTADA (MOBILE & TABLET)
+   ========================================================================== */
 @media (max-width: 768px) {
     .navbar {
         padding: 12px 16px;
+        flex-direction: row;
+        flex-wrap: wrap;
         justify-content: space-between;
+        gap: 12px;
     }
 
+    /* Topo: Logo na esquerda */
     .logo-group {
+        width: auto;
         gap: 10px;
     }
 
@@ -611,16 +652,27 @@ textarea:focus {
         font-size: 1.2rem;
     }
 
+    /* Topo: Usuário / Botão de Login fixado no canto direito superior */
+    #nav-user-area {
+        order: 2;
+        margin-left: auto;
+        gap: 8px;
+    }
+
+    /* Segunda Linha: Botão Explorar + Navegação Livros/Contos organizados */
+    .explore-dropdown-container {
+        order: 3;
+    }
+
     .explore-btn {
-        padding: 5px 10px;
+        padding: 6px 12px;
         font-size: 0.8rem;
     }
 
     .nav-tabs {
-        order: 3;
-        width: 100%;
+        order: 4;
+        flex: 1;
         justify-content: center;
-        margin-top: 5px;
     }
 
     .nav-tabs .tab-btn,
@@ -629,11 +681,6 @@ textarea:focus {
         text-align: center;
         padding: 6px 10px;
         font-size: 0.85rem;
-    }
-
-    #nav-user-area {
-        order: 2;
-        gap: 8px;
     }
 
     .btn-vip-nav {
@@ -689,18 +736,4 @@ textarea:focus {
     .card-info h3 {
         font-size: 0.95rem;
     }
-}
-.logo-text {
-    font-family: 'Cinzel', serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-}
-
-.logo-highlight {
-    color: #ff3b69;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    margin-left: 2px;
 }
