@@ -425,25 +425,32 @@ body {
     font-family: var(--font-title); 
 }
 
-.chapters-list { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 0.85rem; 
+/* Força o container principal e as abas a ocuparem 100% da largura útil */
+.tab-content,
+#tab-chapters,
+.chapters-section {
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Garante que a lista e cada card estiquem de ponta a ponta nas margens */
+.chapters-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.85rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
 .chapter-item {
-    background: var(--bg-card);
-    padding: 1.2rem 1.2rem;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     width: 100% !important;
-    box-sizing: border-box;
-    transition: background 0.2s;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 1.2rem 1.2rem !important;
 }
 
 .chapter-item:hover {
