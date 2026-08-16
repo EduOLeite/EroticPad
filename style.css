@@ -639,39 +639,34 @@ textarea:focus {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        position: relative;
     }
 
-    /* Linha 1: Topo com Logo e Perfil alinhados */
+    /* Primeira linha flexível: Logo na esquerda e Perfil na direita */
     .logo-group {
         width: 100%;
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
     }
 
-    /* Reduz um pouco a logo no mobile para dar respiro */
+    /* Garante que o texto da logo reduza para não colidir com o botão de perfil */
     .logo-text {
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
     }
 
-    /* Força o botão do Eduardo a ir para a direita no topo */
+    .logo svg {
+        width: 26px !important;
+        height: 26px !important;
+    }
+
+    /* Remove o Absolute que estava causando a sobreposição */
     #nav-user-area {
-        position: absolute;
-        top: 12px;
-        right: 16px;
+        position: static !important;
+        margin-left: auto;
     }
 
-    /* Linha 2: Barra de navegação inferior completa */
-    .nav-tabs {
-        width: 100%;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 6px;
-        border-radius: 25px;
-    }
-
+    /* Linhas inferiores para botões */
     .explore-dropdown-container {
         width: 100%;
     }
@@ -682,18 +677,18 @@ textarea:focus {
     }
 
     .nav-tabs {
-        order: 4;
-        flex: 1;
-        justify-content: center;
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
     }
 
     .nav-tabs .tab-btn,
     .nav-tabs button {
         flex: 1;
         text-align: center;
-        padding: 6px 10px;
-        font-size: 0.85rem;
     }
+}
 
     .btn-vip-nav {
         padding: 0.4rem 0.8rem;
