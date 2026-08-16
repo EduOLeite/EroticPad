@@ -690,3 +690,17 @@ textarea:focus {
         font-size: 0.95rem;
     }
 }
+.logo-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+.logo-highlight {
+    color: #ff3b69;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    margin-left: 2px;
+}
