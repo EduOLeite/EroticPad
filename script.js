@@ -159,6 +159,7 @@ async function verificarSessaoLeitor() {
 }
 
 async function carregarPerfilLeitor(userId) {
+    if (!userId) return null;
     const { data } = await supabaseClient
         .from('perfis_leitores')
         .select('*')
@@ -168,6 +169,7 @@ async function carregarPerfilLeitor(userId) {
     if (data) {
         perfilLeitor = data;
     }
+    return data;
 }
 
 function checarSeEhAdmin() {
@@ -656,9 +658,14 @@ function mostrarHome() {
     carregarHistorias();
 }
 
-function abrirHistoria(historia) {
+async function abrirHistoria(historia) {
     obraAtualObjeto = historia;
     historiaAtual = historia.titulo;
+
+    if (leitorAtual) {
+        await carregarPerfilLeitor(leitorAtual.id);
+        atualizarNavbarUser();
+    }
 
     const capaImg = historia.capa_url || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80';
     document.getElementById('detail-cover').src = capaImg;
@@ -678,7 +685,7 @@ function abrirHistoria(historia) {
     } else {
         if (navTabs) navTabs.classList.remove('hidden');
         alternarAbaDetalhes('synopsis');
-        carregarCapitulosDaHistoria(historia.titulo);
+        await carregarCapitulosDaHistoria(historia.titulo);
     }
 
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -722,16 +729,11 @@ function voltarParaDetalhes() {
     document.getElementById('view-details').classList.remove('hidden');
 }
 
-function alternarTipoConteudo(tipo) {
-    if (tipo === 'conto') {
-        const ehVipOuAdmin = checarSeEhVip();
-        if (!ehVipOuAdmin) {
-            alert("🔒 A aba de Contos é exclusiva para assinantes VIP!");
-            abrirModalVIP();
-            return;
-        }
-    }
+async function alternarTipoConteudo(tipo) {
+    if (leitorAtual) await carregarPerfilLeitor(leitorAtual.id);
 
+    // Permite que qualquer leitor acesse a aba de Contos para ver o catálogo,
+    // o bloqueio individual é tratado ao tentar ler o conto que não for promocional.
     tipoConteudoAtual = tipo;
 
     const btnLivros = document.getElementById('btn-livros');
@@ -788,9 +790,15 @@ function renderizarCardsHistorias(lista) {
         card.className = 'story-card';
         card.onclick = () => abrirHistoria(historia);
 
-        const badgeInfo = historia.tipo === 'conto' 
-            ? '<span class="free-badge" style="background: rgba(255, 59, 105, 0.15); color: #ff3b69;">Exclusivo VIP 🔥</span>' 
-            : '<span class="free-badge">Capítulos 1 e 2 Grátis</span>';
+        let badgeInfo = '<span class="free-badge">Capítulos 1 e 2 Grátis</span>';
+        
+        if (historia.tipo === 'conto') {
+            if (historia.eh_promocional) {
+                badgeInfo = '<span class="free-badge" style="background: rgba(76, 175, 80, 0.2); color: #4caf50; font-weight: bold;">🎁 Amostra Grátis</span>';
+            } else {
+                badgeInfo = '<span class="free-badge" style="background: rgba(255, 59, 105, 0.15); color: #ff3b69;">Exclusivo VIP 🔥</span>';
+            }
+        }
 
         const labelConteudo = historia.tipo === 'conto' ? '🔥 Conto' : '📖 Capítulos';
 
@@ -815,6 +823,8 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
     const listaContainer = document.querySelector('.chapters-list');
     if (!listaContainer) return;
     listaContainer.innerHTML = "<p style='color: var(--text-secondary);'>Carregando capítulos...</p>";
+
+    if (leitorAtual) await carregarPerfilLeitor(leitorAtual.id);
 
     const { data: capitulos, error } = await supabaseClient
         .from('capitulos')
@@ -866,21 +876,24 @@ async function carregarCapitulosDaHistoria(tituloHistoria) {
     });
 }
 
-function iniciarLeituraPrimeiroCap() {
+async function iniciarLeituraPrimeiroCap() {
     if (obraAtualObjeto && obraAtualObjeto.tipo === 'conto') {
-        abrirLeitorConto(obraAtualObjeto);
+        await abrirLeitorConto(obraAtualObjeto);
         return;
     }
 
     if (primeiroCapituloCarregado) {
-        abrirLeitorCapitulo(primeiroCapituloCarregado);
+        await abrirLeitorCapitulo(primeiroCapituloCarregado);
     } else {
         alert("Ainda não há capítulos para este livro!");
     }
 }
 
-function abrirLeitorConto(conto) {
+async function abrirLeitorConto(conto) {
+    if (leitorAtual) await carregarPerfilLeitor(leitorAtual.id);
+    
     const ehVip = checarSeEhVip();
+    const ehPromocional = conto.eh_promocional === true;
 
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
@@ -900,11 +913,13 @@ function abrirLeitorConto(conto) {
         .filter(p => p.length > 0);
 
     if (textElem) {
-        if (!ehVip) {
+        // Se NÃO for VIP e NÃO for promocional, exibe paywall com prévia
+        if (!ehVip && !ehPromocional) {
             const previa = paragrafos.slice(0, 2).map(p => `<p>${p}</p>`).join('');
             textElem.innerHTML = previa;
             if (paywallElem) paywallElem.classList.remove('hidden');
         } else {
+            // Se for VIP ou conto Promocional/Gratuito, libera todo o texto
             textElem.innerHTML = paragrafos.map(p => `<p>${p}</p>`).join('');
             if (paywallElem) paywallElem.classList.add('hidden');
         }
@@ -913,11 +928,13 @@ function abrirLeitorConto(conto) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function abrirLeitorCapitulo(capitulo) {
+async function abrirLeitorCapitulo(capitulo) {
     if (!capitulo) {
         alert("Erro: Dados do capítulo não encontrados.");
         return;
     }
+
+    if (leitorAtual) await carregarPerfilLeitor(leitorAtual.id);
 
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
@@ -982,7 +999,6 @@ async function carregarComentariosObra(tituloHistoria) {
         <div style="margin-bottom: 20px;">
             <h3 style="color: #fff; margin-bottom: 10px;">💬 O que os leitores estão achando</h3>
             
-            <!-- Barra de Emoticons Rápidos -->
             <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
                 <button onclick="inserirEmoji('🔥')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">🔥</button>
                 <button onclick="inserirEmoji('❤️')" style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 4px 8px; cursor: pointer; color: #fff;">❤️</button>
@@ -1134,5 +1150,9 @@ async function alterarPermissaoLeitor(userId, campo, valor) {
         carregarLeitoresParaGerenciar();
     } else {
         console.log(`Permissão ${campo} atualizada para ${valor} no leitor ${userId}`);
+        if (leitorAtual && leitorAtual.id === userId) {
+            await carregarPerfilLeitor(userId);
+            atualizarNavbarUser();
+        }
     }
 }
