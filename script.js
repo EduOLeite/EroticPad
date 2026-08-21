@@ -18,7 +18,7 @@ let tipoConteudoAtual = 'livro'; // 'livro' ou 'conto'
 let generoSelecionadoAtual = 'Todos';
 
 // Chave PIX para pagamentos manuais
-const MINHA_CHAVE_PIX = "+5569992752883";
+const MINHA_CHAVE_PIX = "08165080268";
 
 // -------------------------------------------------------------
 // INICIALIZAÇÃO E FLUXO DE REDEFINIÇÃO DE SENHA
